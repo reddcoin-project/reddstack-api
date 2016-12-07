@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Redd-ID Technology Preview - Serving Your Identity</title>
+    <meta name="description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
+    <!-- Open Graph data -->
+    <meta property="og:title" content="ReddID">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://redd.ink/">
+    <meta property="og:image" content="https://redd.ink/images/metatags/reddink-screenshot.png">
+    <meta property="og:description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
+    
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link rel="shortcut icon" href="favicon.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+  % include('head_nav.tpl')
+
+  <div class="container text-center">
+    <h2>Redd-ID</h2><br>
+    <p><em>Taking social interaction, engagement and rewarding to the next level!</em></p><br>
+    <div class="row" id="panel">
+    <div class="col-sm-4">
+      <p><strong>Acknowledge</strong></p><br>
+      <a href="#ack" data-toggle="collapse" data-parent="#panel">
+          <img src="Acknowledge.jpg" class="img-circle person" alt="Acknowledge">
+      </a>
+      <div id="ack" class="collapse">
+        <p>It takes but a moment to share to others and Inspire them to continue their efforts.</p>
+        <p>Arouse their desire to participate and applaude their efforts.</p>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <p><strong>Reward</strong></p><br>
+      <a href="#reward" data-toggle="collapse" data-parent="#ack">
+        <img src="Reward.jpg" class="img-circle person" alt="Reward">
+      </a>
+      <div id="reward" class="collapse">
+        <p>Use the Earn rewards, or reward those who deserve. Big or small, amounts can grow to be substantial </p>
+      </div>      
+    </div>
+    <div class="col-sm-4">
+      <p><strong>Promote</strong></p><br>
+      <a href="#promote" data-toggle="collapse" data-parent="#panel">
+        <img src="Promote.jpg" class="img-circle person" alt="Promote">
+      </a>
+      <div id="promote" class="collapse">
+        <p>Using the power of social networking promote stories and articles and gain more exposure.</p>
+      </div> 
+    </div>
+  </div>
+  
+  <footer class="text-center">
+    <a class="up-arrow" href="#myPage" data-toggle="tooltip" title="TO TOP">
+      <span class="glyphicon glyphicon-chevron-up"></span>
+    </a><br><br>
+    <p>Website Version: {{version or 'No Version'}} || Network: {{network or 'No Network'}}</p> 
+  </footer>
+
+  </body>
+</html>

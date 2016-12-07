@@ -5,6 +5,7 @@
     ~~~~~
     copyright: (c) 2014-2015 by Halfmoon Labs, Inc.
     copyright: (c) 2016 by Blockstack.org
+    copyright: (c) 2015-2016 Reddcoin Devs
 
     This file is part of Blockstore-client.
 
@@ -39,23 +40,25 @@ import config
 #import user as user_db
 #from spv import SPVClient
 
-import pybitcoin
-import bitcoin
-import binascii
-from utilitybelt import is_hex
+#import pybitcoin
+#import bitcoin
+#import binascii
+#from utilitybelt import is_hex
 
 from config import log, DEBUG, MAX_RPC_LEN, find_missing, BLOCKSTORED_SERVER, \
     BLOCKSTORED_PORT, BLOCKSTORE_METADATA_DIR, BLOCKSTORE_DEFAULT_STORAGE_DRIVERS, \
     FIRST_BLOCK_MAINNET, NAME_OPCODES, OPFIELDS, CONFIG_DIR, SPV_HEADERS_PATH, BLOCKCHAIN_ID_MAGIC, \
     NAME_PREORDER, NAME_REGISTRATION, NAME_UPDATE, NAME_TRANSFER, NAMESPACE_PREORDER, NAME_IMPORT
 
-import virtualchain
+#import virtualchain
 
 # default API endpoint proxy to blockstored
 default_proxy = None
 
 # ancillary storage providers
 STORAGE_IMPL = None
+
+version = "2.1.3"
 
 
 class BlockstoreRPCClient(object):
@@ -179,10 +182,12 @@ class BlockstoreRPCClient(object):
 
         # parse the response
         try:
+            print response
             result = json.loads(response)
-
             # Netstrings responds with [{}] instead of {}
-            result = result[0]
+            #result = result[0]
+            result = result['result']
+
         except Exception, e:
 
             # try to clean up

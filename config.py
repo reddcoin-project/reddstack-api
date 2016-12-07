@@ -12,6 +12,7 @@ from version import __version__
 
 DEBUG = True
 VERSION = __version__
+NETWORK = 'testnet'
 
 DEFAULT_BLOCKSTORED_PORT = '6264'
 #DEFAULT_BLOCKSTORED_SERVER = "blockstore.blockstack.org"

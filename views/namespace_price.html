@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Redd-ID Technology Preview - Serving Your Identity</title>
+    <meta name="description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
+    <!-- Open Graph data -->
+    <meta property="og:title" content="ReddID">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://redd.ink/">
+    <meta property="og:image" content="https://redd.ink/images/metatags/reddink-screenshot.png">
+    <meta property="og:description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
+    
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link rel="shortcut icon" href="favicon.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+  % include('head_nav.tpl')
+
+
+  <div class="container text-center">
+  %if price == 0:
+    <h2>What is the price for a Namespace?</h2><br>
+    <p class="text-left">Every name costs a certain amount of money to register, and each namespace has it's own name pricing rules</p>
+    <p class="text-left">The price that you pay is put back to the network as an stake reward for nodes that are staking, node operators, and development fund</p>
+    <p class="text-left">To determine how much your name will cost to order, use the following form.</p><br>
+
+        <form role="form" action="/namespace/price" method="post">
+          <div class="form-group">
+            Namespace: <input name="namespace" type="text" />
+            <input value="Calculate" type="submit" />
+            </div>
+        </form>
+  <%else:
+    price_rdd = float(price['satoshis']) * 0.00000001
+    price_mrdd = float(price['satoshis']) * 0.000001
+    price_urdd = float(price['satoshis']) * 0.001
+    %>
+      <h2>The price of registering the "{{name}}" namespace is?</h2><br>
+      <p>{{price_rdd}} RDD</p>
+      <p>{{price_mrdd}} mRDD</p>
+      <p>{{price_urdd}} uRDD</p>
+      <p>{{price['satoshis']}} rdd satoshi</p>
+  %end
+  </div>
+  <footer class="text-center">
+    <a class="up-arrow" href="#myPage" data-toggle="tooltip" title="TO TOP">
+      <span class="glyphicon glyphicon-chevron-up"></span>
+    </a><br><br>
+ 
+  </footer>
+
+  </body>
+</html>

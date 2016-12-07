@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Redd-ID Technology Preview - Serving Your Identity</title>
+    <meta name="description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
+    <!-- Open Graph data -->
+    <meta property="og:title" content="ReddID">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://redd.ink/">
+    <meta property="og:image" content="https://redd.ink/images/metatags/reddink-screenshot.png">
+    <meta property="og:description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
+    
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link rel="shortcut icon" href="favicon.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+  % include('head_nav.tpl')
+
+
+  <div class="container text-center">
+  %if name == '':
+    <h2>Lookup a Redd-ID Alias?</h2><br>
+    <p></p>
+
+        <form role="form" action="/name/lookup" method="post">
+          <div class="form-group">
+            Alias: <input name="username" type="text" />
+            <input value="Lookup" type="submit" />
+            </div>
+        </form>
+  <%elif "name" in status:
+    %>
+      <h2>Record for "{{name}}"</h2><br>
+      <p>Server response "{{status}}"</p>
+  <%else:
+    %>
+      <h2>There is no record for "{{name}}"</h2><br>
+  %end
+  </div>
+  <footer class="text-center">
+    <a class="up-arrow" href="#myPage" data-toggle="tooltip" title="TO TOP">
+      <span class="glyphicon glyphicon-chevron-up"></span>
+    </a><br><br>
+ 
+  </footer>
+
+  </body>
+</html>
