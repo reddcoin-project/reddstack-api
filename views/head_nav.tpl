@@ -1,4 +1,4 @@
-    <nav class="navbar .navbar-inverse navbar-fixed-top">
+    <nav class="navbar .navbar-inverse navbar-fixed-top navbar-default">
       <div class="container-fluid">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
@@ -10,7 +10,6 @@
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="/">HOME</a></li>
             <li class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown" href="#">DETAILS
               <span class="caret"></span></a>
@@ -48,24 +47,28 @@
               </ul>
             </li> 
             <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#">ABOUT
-              <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li><a href="#">Who Are We?</a></li>
-                <li><a href="#">How Does it Work</a></li>
-                <li><a href="#">More info</a></li>
-              </ul>
-            </li>            
+                <a href="/register">
+                    <span class="glyphicon glyphicon-pencil"></span>Register
+                </a>
+            </li> 
             <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#">MORE
-              <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li><a href="#">Merchandise</a></li>
-                <li><a href="#">API</a></li>
-                <li><a href="/status">Status</a></li>
-              </ul>
+                <a href="/login">
+                    <span class="glyphicon glyphicon-log-in"></span>Login
+                </a>
+            </li> 
+            <!-- add search form -->
+            <li class="dropdown">
+              <form id="prefetch_search" class="navbar-form navbar-right" role="search">
+                  <div class="input-group">
+                      <input type="text" class="typeahead tt-query form-control" autocomplete="off" spellcheck="false" placeholder="Search users">
+                      <span class="input-group-btn">
+                          <button type="submit" class="btn btn-default">
+                          <span class="glyphicon glyphicon-search"></span>
+                          </button>
+                      </span>
+                  </div>
+              </form>
             </li>
-            <li><a href="#"><span class="glyphicon glyphicon-search"></span></a></li>
           </ul>
         </div>
       </div>

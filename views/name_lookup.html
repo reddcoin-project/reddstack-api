@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Redd-ID Technology Preview - Serving Your Identity</title>
     <meta name="description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Open Graph data -->
     <meta property="og:title" content="ReddID">
     <meta property="og:type" content="website">
@@ -13,11 +14,34 @@
     
     <link rel="icon" type="image/png" href="favicon.png"/>
     <link rel="shortcut icon" href="favicon.ico"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/typeahead.bundle.js"></script>
     <link type="text/css" rel="stylesheet" href="/style.css" />
+    <script type="text/javascript">
+      $(document).ready(function(){
+          // Constructs the suggestion engine
+          var countries = new Bloodhound({
+              datumTokenizer: Bloodhound.tokenizers.whitespace,
+              queryTokenizer: Bloodhound.tokenizers.whitespace,
+              // The url points to a json file that contains an array of country names
+              prefetch: '/api/name/allnames/test' 
+          });
+          
+          // Initializing the typeahead with remote dataset
+          $('#prefetch_search .typeahead').typeahead({
+                hint: true,
+                highlight: true,
+                minLength: 1
+              },
+              {
+              name: 'countries',
+              source: countries,
+              limit: 10 /* Specify maximum number of suggestions to be displayed */
+          });
+      });  
+    </script>
   </head>
   <body>
   % include('head_nav.tpl')
@@ -35,9 +59,24 @@
             </div>
         </form>
   <%elif "name" in status:
+  price_rdd = float(status['op_fee']) * 0.00000001
     %>
-      <h2>Record for "{{name}}"</h2><br>
-      <p>Server response "{{status}}"</p>
+      <h2>Name Lookup</h2><br>
+    <table class="table">
+      <tr>
+        <td>Name:</td>
+        <td>{{name}}</td>
+      </tr>
+      <tr>
+        <td>First Registered</td>
+        <td>{{status['first_registered']}}</td>
+      </tr>
+      <tr>
+        <td>Paid</td>
+        <td>{{price_rdd}} rdd</td>
+      </tr>
+    </table>
+
   <%else:
     %>
       <h2>There is no record for "{{name}}"</h2><br>

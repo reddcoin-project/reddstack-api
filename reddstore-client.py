@@ -25,7 +25,7 @@ log = config.log
 log.setLevel(logging.DEBUG)
 log.debug('Start')
 
-from bottle import Bottle, run, template, get, post, request, static_file, url, debug
+from bottle import Bottle, run, template, get, post, request, response, static_file, url, debug
 
 app = Bottle()
 
@@ -118,7 +118,35 @@ def name_lookup():
 
 @app.route('/api/name/lookup/<name>')
 def name_lookup(name):
-    return template('<p>Lookup of {{name}} is {{status}}</p>', name=name, status=client.get_name_blockchain_record(str(name + '.test')))
+    response.content_type = 'application/json'
+    return client.get_name_blockchain_record(str(name + '.test'))
+    #return template('<p>Lookup of {{name}} is {{status}}</p>', name=name, status=client.get_name_blockchain_record(str(name + '.test')))   
+
+#NAME all_names
+@app.route('/name/allnames', method='GET')
+def name_allnames():
+    resp = {}
+    resp['name'] = ''
+    return template('name_allnames', **resp)
+
+@app.route('/name/allnames', method='POST')
+def name_allnames():
+    resp = {}
+    namespace = request.forms.get('namespace')
+    resp['namespace'] = namespace
+    resp['status'] = client.get_names_in_namespace(str(namespace))
+    print repr(resp)
+    return template('name_allnames', **resp)
+
+@app.route('/api/name/allnames/<namespace>')
+def name_allnames(namespace):
+    result = json.dumps(client.get_names_in_namespace(str(namespace),None,None))   
+    #print result 
+    resp = json.loads(result) 
+    #print resp
+    response.content_type = 'application/json'
+    return json.dumps(resp['results'])
+    #return template('{{result}}', **result) 
 
 #NAME Price
 @app.route('/name/price', method='GET')
