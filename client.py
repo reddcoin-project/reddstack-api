@@ -182,11 +182,11 @@ class BlockstoreRPCClient(object):
 
         # parse the response
         try:
-            print response
             result = json.loads(response)
             # Netstrings responds with [{}] instead of {}
             #result = result[0]
-            result = result['result']
+            #result = result['result']
+            result = result['result'][0]
 
         except Exception, e:
 
