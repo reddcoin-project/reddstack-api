@@ -21,21 +21,27 @@ proxy = client.session(conf=conf, server_host=reddstack_server, server_port=redd
     #BASE
 @app.route('/')
 def home():
-    my_dict = {}
-    my_dict['version'] = format(config.VERSION)
-    my_dict['network'] = format(config.NETWORK)
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
 
-    return render_template("index.html", **my_dict)
+    return render_template("index.html", **resp)
 
 @app.route('/what_is_reddid')
 def what_is():
-    return render_template('what_is_reddid.html')
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+    return render_template('what_is_reddid.html', **resp )
 
 
 #NAME/Identity pages
 @app.route('/name/details')
 def details():
-    return render_template('name_details.html')
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+    return render_template('name_details.html', **resp )
 
 
 
@@ -47,6 +53,7 @@ def name_lookup():
     resp = {}
     resp['name'] = ''
     resp['status'] = ''
+    resp['version'] = format(config.VERSION)
     resp['network'] = format(config.NETWORK)
 
     if request.method == 'POST':
@@ -74,6 +81,7 @@ def name_allnames():
     resp = {}
     resp['namespace'] = ''
     resp['status'] = ''
+    resp['version'] = format(config.VERSION)
     resp['network'] = format(config.NETWORK)
     if request.method == 'POST':
         namespace = request.form['namespace']
@@ -98,6 +106,8 @@ def name_price():
     form  = PriceForm()
     resp = {}
     resp['price']=0
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
     if request.method == 'POST':
         username = request.form['username']
         if username == '':
@@ -128,6 +138,7 @@ def namespace_lookup():
     resp = {}
     resp['name'] = ''
     resp['status'] = ''
+    resp['version'] = format(config.VERSION)
     resp['network'] = format(config.NETWORK)
 
     if request.method == 'POST':
@@ -159,6 +170,7 @@ def namespace_price():
     resp['name'] = ''
     resp['status'] = ''
     resp['price'] = 0
+    resp['version'] = format(config.VERSION)
     resp['network'] = format(config.NETWORK)
 
     if request.method == 'POST':
