@@ -15,8 +15,8 @@ VERSION = __version__
 NETWORK = 'testnet'
 
 DEFAULT_BLOCKSTORED_PORT = '6264'
-#DEFAULT_BLOCKSTORED_SERVER = "blockstore.blockstack.org"
-DEFAULT_BLOCKSTORED_SERVER = "localhost"
+DEFAULT_BLOCKSTORED_SERVER = "www.redd.ink"
+#DEFAULT_BLOCKSTORED_SERVER = "localhost"
 
 # initialize to default settings
 BLOCKSTORED_SERVER = DEFAULT_BLOCKSTORED_SERVER
