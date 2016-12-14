@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Start status Body -->
+  <div class="container text-center">
+    <h2>Redd-ID Status</h2><br>
+    <p><em>Network Status!</em></p><br>
+    <table class="table">
+      <tr>
+        <td>bitcoind_blocks</td>
+        <td>{{bitcoind_blocks}}</td>
+      </tr>
+      <tr>
+        <td>last_block</td>
+        <td>{{last_block}}</td>
+      </tr>
+      <tr>
+        <td>testset</td>
+        <td>{{testset}}</td>
+      </tr>
+      <tr>
+        <td>blockstore_version</td>
+        <td>{{blockstore_version}}</td>
+      </tr>
+      <tr>
+        <td>consensus</td>
+        <td>{{consensus}}</td>
+      </tr>
+    </table>
+<!-- End status Body -->
+{% endblock %}

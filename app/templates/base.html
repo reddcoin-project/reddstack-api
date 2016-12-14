@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <title>Redd-ID Technology Preview - Serving Your Identity</title>
     <meta name="description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Open Graph data -->
     <meta property="og:title" content="ReddID">
     <meta property="og:type" content="website">
@@ -13,20 +12,22 @@
     <meta property="og:description" content="ReddID is a community building decentralized applications, and a software stack around decentralized DNS, identity and more for blockchain applications.">
     
     <link rel="icon" type="image/png" href="favicon.png"/>
-    <link rel="shortcut icon" href="favicon.ico"/>
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/typeahead.bundle.js"></script>
-    <link type="text/css" rel="stylesheet" href="/style.css" />
+    <script type="text/javascript" src="{{ url_for('static', filename='js/typeahead.bundle.js') }}"></script>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
     <script type="text/javascript">
       $(document).ready(function(){
           // Constructs the suggestion engine
-          var countries = new Bloodhound({
+          var usernames = new Bloodhound({
               datumTokenizer: Bloodhound.tokenizers.whitespace,
               queryTokenizer: Bloodhound.tokenizers.whitespace,
               // The url points to a json file that contains an array of country names
               prefetch: '/api/name/allnames/test' 
+              //prefetch: 'http://redd.ink:8080/api/name/allnames/test'
           });
           
           // Initializing the typeahead with remote dataset
@@ -36,58 +37,27 @@
                 minLength: 1
               },
               {
-              name: 'countries',
-              source: countries,
+              name: 'usernames',
+              source: usernames,
               limit: 10 /* Specify maximum number of suggestions to be displayed */
           });
       });  
     </script>
+    <style type="text/css">
+.bs-example {
+  font-family: sans-serif;
+  position: relative;
+  margin: 100px;
+}
+
+</style>
   </head>
   <body>
-  % include('head_nav.tpl')
-
-
-  <div class="container text-center">
-  %if name == '':
-    <h2>Lookup a Redd-ID Alias?</h2><br>
-    <p></p>
-
-        <form role="form" action="/name/lookup" method="post">
-          <div class="form-group">
-            Alias: <input name="username" type="text" />
-            <input value="Lookup" type="submit" />
-            </div>
-        </form>
-  <%elif "name" in status:
-  price_rdd = float(status['op_fee']) * 0.00000001
-    %>
-      <h2>Name Lookup</h2><br>
-    <table class="table">
-      <tr>
-        <td>Name:</td>
-        <td>{{name}}</td>
-      </tr>
-      <tr>
-        <td>First Registered</td>
-        <td>{{status['first_registered']}}</td>
-      </tr>
-      <tr>
-        <td>Paid</td>
-        <td>{{price_rdd}} rdd</td>
-      </tr>
-    </table>
-
-  <%else:
-    %>
-      <h2>There is no record for "{{name}}"</h2><br>
-  %end
-  </div>
-  <footer class="text-center">
-    <a class="up-arrow" href="#myPage" data-toggle="tooltip" title="TO TOP">
-      <span class="glyphicon glyphicon-chevron-up"></span>
-    </a><br><br>
- 
-  </footer>
-
+  <!-- Base Header -->
+  {% include 'nav_header.html' %}
+  <!-- Base Body -->
+  {% block content %}{% endblock %}
+  <!-- Base Footer -->
+  {% include 'nav_footer.html' %}
   </body>
 </html>

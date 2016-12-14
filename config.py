@@ -4,7 +4,7 @@
 import os
 import logging
 import traceback
-import virtualchain
+#import virtualchain
 
 from ConfigParser import SafeConfigParser
 
@@ -186,8 +186,6 @@ if len(log.handlers) == 0:
     log.propagate = False
     log.addHandler(console)
     log.addHandler(fh)
-
-    log.info('test')
 
 
 def make_default_config(path=CONFIG_PATH):

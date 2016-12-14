@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Start name_details Body -->
+
+
+  <div class="container text-center">
+    <h2>What is a Redd-ID Identity?</h2><br>
+    <p class="text-left">A Redd-ID Identity is a method to link all your social networking accounts to a specific Reddcoin address</p>
+    <p class="text-left">You can update the associated address as many times as you like to suit your requirements</p>
+    <ul class="list-unstyled text-left">
+    <pre><code>
+      {
+        "identity": "redd.id",
+        "name": "John Nash",
+        "email": "john@redd.ink"
+        "reddcoin": "Rp7NVkqNkxPkh9XnTbn42EwQHZ6UEbKciu",
+        "network": {
+          "facebook": {
+            "alias": "johnnash",
+            "confirmed": "true",
+            "reddcoin": "RNkxPkh9XnTbn42EwQHZ6UEbKciup7NVkq"
+          },
+          "reddit": {
+            "alias": "cryptognasher",
+            "confirmed": "true",
+            "reddcoin": "R2EwQHZ6UEbKciup7NVkqNkxPkh9XnTbn4"
+          },
+          "reddcointalk": {
+            "alias": "gnasher",
+            "confirmed": "pending",
+            "reddcoin": "RpbKciuxPkh9XnTbn7NVkqNk42EwQHZ6UE"
+          },
+          "twitter": {
+            "alias": "gnash0502",
+            "confirmed": "true",
+            "reddcoin": "REbKciup742EwQHZ6NVkqNkxPkh9XnTbnU"
+          }
+        }
+      }
+    </code></pre>
+    <p class="text-left">The first step in establishing a Redd-id identity is determining an alias or user-name.</p>
+    <p class="text-left">Price of an identity is determined by a number of factors</p>
+    <p class="text-left">These including</p>
+    <ul class="list-unstyled text-left">
+      <li>Redd-ID provides:</li>
+        <ul>
+          <li>Identity character length</li>
+          <li>Including non-alpha characters</li>
+          <li>Including vowels</li>
+        </ul>
+    </ul>
+    <p class="text-left">Usernames can be 1 or more characters long and include alpha-numeric and non alphabet characters.</p>
+  </div>
+<!-- End name_details Body -->
+{% endblock %}
