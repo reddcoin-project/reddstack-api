@@ -42,7 +42,8 @@ Start application
 ./run.py
 ```
 
-Reddstack-web is listening on all interfaces, port:8080. From your favourite browser
+Reddstack-web is listening on all interfaces, port 8080.  
+Launch from your favourite browser
 
 ```
 http://localhost:8080
