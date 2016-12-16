@@ -34,6 +34,36 @@ def what_is():
     resp['network'] = format(config.NETWORK)
     return render_template('what_is_reddid.html', **resp )
 
+@app.route('/how_does_it_work')
+def how_does_it_work():
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+    return render_template('how_does_it_work.html', **resp )
+    
+@app.route('/acknowledge')
+def acknowledge():
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+    return render_template('acknowledge.html', **resp )
+
+@app.route('/reward')
+def reward():
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+    return render_template('reward.html', **resp )
+
+@app.route('/promote')
+def promote():
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+    return render_template('promote.html', **resp )
+
+
+
 
 #NAME/Identity pages
 @app.route('/name/details')
