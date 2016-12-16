@@ -4,7 +4,11 @@
   <div class="container text-center">
   {% if status.error %}
 
-     <h2>There is no record for "{{name}}"</h2><br>
+    <h2>There is no record for "{{name}}"</h2><br>
+    <hr>
+      <p>
+        <a href="/name/lookup" class="btn btn-info" role="button">Lookup New</a>
+      </p>
 
   {% elif name == '' %}
     <h2>Lookup a Redd-ID Alias?</h2><br>
@@ -34,6 +38,10 @@
         <td>{{status['op_fee']  * 0.00000001}} rdd</td>
       </tr>
     </table>
+    <hr>
+      <p>
+        <a href="/name/lookup" class="btn btn-info" role="button">Lookup New</a>
+      </p>
 
 
 

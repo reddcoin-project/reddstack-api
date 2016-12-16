@@ -17,11 +17,15 @@
             </div>
         </form>
   {% else %}
-      <h2>The price of registering "{{name}}" is?</h2><br>
-      <p>{{price['satoshis'] * 0.00000001}} RDD</p>
-      <p>{{price['satoshis'] * 0.000001}} mRDD</p>
-      <p>{{price['satoshis'] * 0.001}} uRDD</p>
-      <p>{{price['satoshis']}} rdd satoshi</p>
+    <h2>The price of registering "{{name}}" is?</h2><br>
+    <p>{{price['satoshis'] * 0.00000001}} RDD</p>
+    <p>{{price['satoshis'] * 0.000001}} mRDD</p>
+    <p>{{price['satoshis'] * 0.001}} uRDD</p>
+    <p>{{price['satoshis']}} rdd satoshi</p>
+      <hr>
+      <p>
+        <a href="/name/price" class="btn btn-info" role="button">Lookup New</a>
+      </p>
   {% endif %}
   </div>
 <!-- End name_price Body -->
