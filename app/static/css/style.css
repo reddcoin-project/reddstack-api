@@ -149,6 +149,21 @@ footer a:hover {
     text-decoration: none;
 }
 
+@media (max-width: 767px) {
+  .navbar-nav .open .dropdown-menu li a {
+    background-color: #fff;
+  }
+}
+
+/* Main images */
+
+.info_img {
+    vertical-align: middle;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
 /*twitter search */
 
 .twitter-typeahead {
