@@ -14,6 +14,11 @@ DEBUG = True
 VERSION = __version__
 NETWORK = 'testnet'
 
+# configuration
+DATABASE = 'minitwit.db'
+PER_PAGE = 30
+SECRET_KEY = 'development key'
+
 DEFAULT_BLOCKSTORED_PORT = '6264'
 DEFAULT_BLOCKSTORED_SERVER = "www.redd.ink"
 #DEFAULT_BLOCKSTORED_SERVER = "localhost"

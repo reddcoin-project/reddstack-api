@@ -46,6 +46,7 @@
                 <li><a href="#">More info</a></li>
               </ul>
             </li> 
+            {% if not g.user %}
             <li class="dropdown">
                 <a href="/register">
                     <span class="glyphicon glyphicon-pencil"></span>Register
@@ -56,6 +57,18 @@
                     <span class="glyphicon glyphicon-log-in"></span>Login
                 </a>
             </li> 
+            {% else %}
+            <li class="dropdown">
+                <a href="/details">
+                    <span class="glyphicon glyphicon-edit"></span>Details
+                </a>
+            </li> 
+            <li class="dropdown">
+                <a href="/logout">
+                    <span class="glyphicon glyphicon-log-out"></span>Logout
+                </a>
+            </li> 
+            {% endif %}            
             <!-- add search form -->
             <li class="dropdown">
               <form id="prefetch_search" class="navbar-form navbar-right" role="search">
@@ -69,7 +82,11 @@
                   </div>
               </form>
             </li>
-          </ul>
+          </ul>          
         </div>
       </div>
     </nav>
+    {% for message in get_flashed_messages() %}
+    <div class=flash>{{ message }}</div>
+    {% endfor %}
+    

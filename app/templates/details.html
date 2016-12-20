@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Start reward Body -->
+
+
+  <div class="container text-center">
+  {% if g.user %}
+    <h2>Details</h2><br>
+   {% else %}
+   {{redirect(url_for('home'))}}
+
+   {% endif %}
+
+
+  </div>
+<!-- End reward Body -->
+{% endblock %}

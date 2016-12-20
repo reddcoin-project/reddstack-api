@@ -1,5 +1,7 @@
 import json
-from flask import render_template, request, Response
+from sqlite3 import dbapi2 as sqlite3
+from flask import g, render_template, request, Response, redirect, url_for, session, flash, _app_ctx_stack
+from werkzeug import check_password_hash, generate_password_hash
 from app import app
 from .forms import LookupForm, PriceForm, LookupAllnamesForm, NamespaceLookupForm, NamespacePriceForm
 
@@ -17,6 +19,55 @@ reddstack_port = conf['port']
 
 proxy = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port) 
 
+def get_db():
+    """Opens a new database connection if there is none yet for the
+    current application context.
+    """
+    top = _app_ctx_stack.top
+    if not hasattr(top, 'sqlite_db'):
+        top.sqlite_db = sqlite3.connect(config.DATABASE)
+        top.sqlite_db.row_factory = sqlite3.Row
+    return top.sqlite_db
+
+@app.teardown_appcontext
+def close_database(exception):
+    """Closes the database again at the end of the request."""
+    top = _app_ctx_stack.top
+    if hasattr(top, 'sqlite_db'):
+        top.sqlite_db.close()
+
+def init_db():
+    """Initializes the database."""
+    db = get_db()
+    with app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().executescript(f.read())
+    db.commit()
+
+@app.cli.command('initdb')
+def initdb_command():
+    """Creates the database tables."""
+    init_db()
+    print('Initialized the database.')
+
+
+
+def query_db(query, args=(), one=False):
+    """Queries the database and returns a list of dictionaries."""
+    cur = get_db().execute(query, args)
+    rv = cur.fetchall()
+    return (rv[0] if rv else None) if one else rv
+
+def get_user_id(username):
+    """Convenience method to look up the id for a username."""
+    rv = query_db('select user_id from user where username = ?', [username], one=True)
+    return rv[0] if rv else None
+
+@app.before_request
+def before_request():
+    g.user = None
+    if 'user_id' in session:
+        g.user = query_db('select * from user where user_id = ?',
+                          [session['user_id']], one=True)
 
     #BASE
 @app.route('/')
@@ -40,7 +91,7 @@ def how_does_it_work():
     resp['version'] = format(config.VERSION)
     resp['network'] = format(config.NETWORK)
     return render_template('how_does_it_work.html', **resp )
-    
+
 @app.route('/acknowledge')
 def acknowledge():
     resp = {}
@@ -62,12 +113,86 @@ def promote():
     resp['network'] = format(config.NETWORK)
     return render_template('promote.html', **resp )
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
 
+    """Registers the user."""
+    if g.user:
+        return redirect(url_for('home'))
+    error = None
+    if request.method == 'POST':
+        if not request.form['username']:
+            error = 'You have to enter a username'
+        elif not request.form['email'] or \
+                '@' not in request.form['email']:
+            error = 'You have to enter a valid email address'
+        elif not request.form['password']:
+            error = 'You have to enter a password'
+        elif request.form['password'] != request.form['password2']:
+            error = 'The two passwords do not match'
+        elif get_user_id(request.form['username']) is not None:
+            error = 'The username is already taken'
+        else:
+            db = get_db()
+            db.execute('''insert into user (
+              username, email, pw_hash) values (?, ?, ?)''',
+              [request.form['username'], request.form['email'],
+               generate_password_hash(request.form['password'])])
+            db.commit()
+            flash('You were successfully registered and can login now')
+            return redirect(url_for('login'))
+    return render_template('register.html', error=error, **resp)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+
+    """Logs the user in."""
+    if g.user:
+        return redirect(url_for('details'))
+    error = None
+    if request.method == 'POST':
+        user = query_db('''select * from user where
+            username = ?''', [request.form['username']], one=True)
+        if user is None:
+            error = 'Invalid username'
+        elif not check_password_hash(user['pw_hash'],
+                                     request.form['password']):
+            error = 'Invalid password'
+        else:
+            flash('You have logged in')
+            session['user_id'] = user['user_id']
+            return redirect(url_for('details'))
+    return render_template('login.html', error=error, **resp)
+
+@app.route('/logout')
+def logout():
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+    session.pop('logged_in', None)
+    session.pop('user_id', None)
+    flash('You have logged out')
+    return render_template('logout.html', **resp )
+
+@app.route('/details')
+def details():
+    resp = {}
+    resp['version'] = format(config.VERSION)
+    resp['network'] = format(config.NETWORK)
+    """Logs the user in."""
+    if not g.user:
+        return redirect(url_for('login'))
+    return render_template('details.html', **resp )
 
 #NAME/Identity pages
 @app.route('/name/details')
-def details():
+def name_details():
     resp = {}
     resp['version'] = format(config.VERSION)
     resp['network'] = format(config.NETWORK)
