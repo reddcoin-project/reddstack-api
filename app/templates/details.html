@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<!-- Start reward Body -->
+<!-- Start detail Body -->
 
 
   <div class="container text-center">
   {% if g.user %}
     <h2>Details</h2><br>
+    <p>Your details will appear here!</p>
    {% else %}
-   {{redirect(url_for('home'))}}
+   <p>You shound not have been able to land here</p>
 
    {% endif %}
 
 
   </div>
-<!-- End reward Body -->
+<!-- End detail Body -->
 {% endblock %}
