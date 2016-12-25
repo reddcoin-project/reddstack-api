@@ -1,5 +1,6 @@
 import json
 from sqlite3 import dbapi2 as sqlite3
+import requests
 from flask import g, render_template, request, Response, redirect, url_for, session, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
 from app import app
@@ -61,6 +62,14 @@ def get_user_id(username):
     """Convenience method to look up the id for a username."""
     rv = query_db('select user_id from user where username = ?', [username], one=True)
     return rv[0] if rv else None
+
+def get_blockchain_id(username):
+    data = json.dumps(client.get_name_blockchain_record(str(username + '.test')))
+    data = json.loads(data)
+    if 'name' in data:
+        return (data['name'])
+    return None
+
 
 @app.before_request
 def before_request():
@@ -126,6 +135,8 @@ def register():
     if request.method == 'POST':
         if not request.form['username']:
             error = 'You have to enter a username'
+        elif get_blockchain_id(request.form['username']) is not None:
+            error = 'The blockchain id is already taken'
         elif not request.form['email'] or \
                 '@' not in request.form['email']:
             error = 'You have to enter a valid email address'
@@ -135,6 +146,7 @@ def register():
             error = 'The two passwords do not match'
         elif get_user_id(request.form['username']) is not None:
             error = 'The username is already taken'
+
         else:
             db = get_db()
             db.execute('''insert into user (
@@ -142,6 +154,10 @@ def register():
               [request.form['username'], request.form['email'],
                generate_password_hash(request.form['password'])])
             db.commit()
+
+            # Do block chain registration
+
+
             flash('You were successfully registered and can login now')
             return redirect(url_for('login'))
     return render_template('register.html', error=error, **resp)
@@ -285,7 +301,12 @@ def name_register():
     return render_template('name_register.html')
 
 
-#NAMESPACE Lookup
+#NAMESPACE 
+#NAME register
+@app.route('/namespace/details')
+def namespace_details():
+    return render_template('what_is_namespace.html')
+
 #NAME Lookup
 @app.route('/namespace/lookup', methods=['GET', 'POST'])
 def namespace_lookup():
