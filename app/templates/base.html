@@ -17,10 +17,21 @@
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/typeahead.bundle.js') }}"></script>
+    <script>
+      var HW_config = {
+        selector: "h2", // CSS selector where to inject the badge
+        account: "Jlb1Rx" // your account ID
+      };
+    </script>
+    <script async src="//cdn.headwayapp.co/widget.js"></script>
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
     <script type="text/javascript">
       $(document).ready(function(){
+
+
+          
           // Constructs the suggestion engine
           var usernames = new Bloodhound({
               datumTokenizer: Bloodhound.tokenizers.whitespace,
@@ -31,6 +42,7 @@
           });
           
           // Initializing the typeahead with remote dataset
+          usernames.initialize();
           $('#prefetch_search .typeahead').typeahead({
                 hint: true,
                 highlight: true,
@@ -41,6 +53,123 @@
               source: usernames,
               limit: 10 /* Specify maximum number of suggestions to be displayed */
           });
+            // Use a "/test" namespace.
+            // An application can open a connection on multiple namespaces, and
+            // Socket.IO will multiplex all those connections on a single
+            // physical channel. If you don't care about multiple channels, you
+            // can set the namespace to an empty string.
+            namespace = '/account';
+            // Connect to the Socket.IO server.
+            // The connection URL has the following format:
+            //     http[s]://<domain>:<port>[/<namespace>]
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+            // Event handler for new connections.
+            // The callback function is invoked when a connection with the
+            // server is established.
+            socket.on('connect', function() {
+                socket.emit('my_event', {data: 'I\'m connected!'});
+            });
+            // Event handler for server sent data.
+            // The callback function is invoked whenever the server emits data
+            // to the client. The data is then displayed in the "Received"
+            // section of the page.
+            socket.on('my_response', function(msg) {
+              if (msg.error){
+                $('#error').append('<br>').text('Error: ' + msg.error).html()
+              } else if (msg.success){
+                progressbars = '<div class="myProgress" id="myPreorderProgress"><div id="myPreorderBar"></div></div><div class="myProgress" id="myRegisterProgress"><div id="myRegisterBar"></div></div>';
+                $('div#register').append(progressbars);
+                $("form#register").remove();
+                $('#error').append('<br>').text('Congratulations: ' + msg.success).html();
+              } else {
+                $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data + ': ' + msg.error).html());
+              }
+            });
+            // Event handler for server preoder response tx
+            var preordertx;
+            var registertx;
+            var confirmations = 0;
+            var preordertx_poller;
+            var registertx_poller;
+
+            socket.on('preorder_tx', function(msg) {
+              preordertx = msg.tx_hash;
+              $('form#register').remove()
+              //$('div#preorder').append('<br>').text(msg.tx_hash).html()
+
+              preordertx_poller = window.setInterval(function(){ get_tx(preordertx, 'preorder')},10000);
+            });
+
+            socket.on('register_tx', function(msg) {
+              registertx = msg.tx_hash;
+              $('form#register').remove()
+              //$('div#register').append('<br>').text(msg.tx_hash).html()
+
+              registertx_poller = window.setInterval(function(){ get_tx(registertx, 'register')},10000);
+
+            });
+
+            function get_tx(tx, op) {
+              socket.emit('get_tx', {'tx_hash': tx, 'op': op})
+            }
+
+            socket.on('send_tx', function(msg) {
+              if (msg.confirmations > 7) {
+                if (msg.op == 'preorder'){
+                  window.clearInterval(preordertx_poller)
+                }else if (msg.op == 'register') {
+                  window.clearInterval(registertx_poller)
+                }
+                
+              }else if (msg.confirmations <= 6) {
+                var preorderelem = document.getElementById("myPreorderBar");
+                var registerelem = document.getElementById("myRegisterBar");
+                
+                if (msg.op == 'preorder'){
+                  var preorder_progress = (msg.confirmations / 6) * 100;
+                  preorderelem.style.width = preorder_progress + '%';
+                  $('div#myPreorderBar').text('Preorder Progress : ' + preorder_progress.toFixed(2) + '%').html();
+                }else if (msg.op == 'register') {
+                  var register_progress = (msg.confirmations / 6) * 100;
+                  registerelem.style.width = register_progress + '%';
+                  $('div#myRegisterBar').text('Register Progress : ' + register_progress.toFixed(2) + '%').html();
+                }
+
+
+                $('#log').append('<br>' + $('<div/>').text('Received #' + tx + ': ' + msg.confirmations).html());
+
+              }
+
+            });
+            // Interval function that tests message latency by sending a "ping"
+            // message. The server then responds with a "pong" message and the
+            // round trip time is measured.
+            var ping_pong_times = [];
+            var start_time;
+            window.setInterval(function() {
+                start_time = (new Date).getTime();
+                socket.emit('my_ping');
+            }, 1000);
+            // Handler for the "pong" message. When the pong is received, the
+            // time from the ping is stored, and the average of the last 30
+            // samples is average and displayed.
+            socket.on('my_pong', function() {
+                var latency = (new Date).getTime() - start_time;
+                ping_pong_times.push(latency);
+                ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+                var sum = 0;
+                for (var i = 0; i < ping_pong_times.length; i++)
+                    sum += ping_pong_times[i];
+                $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+            });
+            // Handlers for the different forms in the page.
+            // These accept data from the user and send it to the server in a
+            // variety of ways
+            $('form#register').submit(function(event) {
+                console.log('register', {username: $('#register_name').val()});
+                socket.emit('register', {username: $('#register_name').val(), email: $('#register_email').val(), pwd1: $('#register_pwd').val(), pwd2: $('#register_pwd2').val() });
+                return false;
+            });
       });  
     </script>
     <style type="text/css">
