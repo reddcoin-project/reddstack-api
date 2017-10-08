@@ -19,6 +19,8 @@ DATABASE = 'minitwit.db'
 PER_PAGE = 30
 SECRET_KEY = 'development key'
 
+PRIV_KEY = 'cMzw5mKhb6jjqjp8EdUSCmdpLDg17BUeXVcGdpwk95URmZvFpR3j'
+
 DEFAULT_BLOCKSTORED_PORT = '6264'
 DEFAULT_BLOCKSTORED_SERVER = "www.redd.ink"
 #DEFAULT_BLOCKSTORED_SERVER = "localhost"
@@ -28,9 +30,9 @@ BLOCKSTORED_SERVER = DEFAULT_BLOCKSTORED_SERVER
 BLOCKSTORED_PORT = DEFAULT_BLOCKSTORED_PORT
 
 BLOCKSTORE_METADATA_DIR = os.path.expanduser("~/.reddstore-client/metadata")
-BLOCKSTORE_DEFAULT_STORAGE_DRIVERS = "dht"
+BLOCKSTORE_DEFAULT_STORAGE_DRIVERS = "disk"
 
-DEFAULT_TIMEOUT = 5  # in secs
+DEFAULT_TIMEOUT = 60  # in secs
 
 # borrowed from Blockstore
 FIRST_BLOCK_MAINNET = 70000
@@ -177,20 +179,16 @@ SPV_HEADERS_PATH = os.path.join(CONFIG_DIR, "blockchain-headers.dat")
 
 BLOCKCHAIN_ID_MAGIC = 'id'
 
-log = logging.getLogger('myapp')
+log = logging.getLogger()
 if len(log.handlers) == 0:
     log.setLevel(logging.DEBUG if DEBUG else logging.INFO)
-    fh = logging.FileHandler('client.log')
-    fh.setLevel(logging.DEBUG if DEBUG else logging.INFO)
     console = logging.StreamHandler()
     console.setLevel(logging.DEBUG if DEBUG else logging.INFO)
     log_format = ('[%(levelname)s] [%(module)s:%(lineno)d] (' + str(os.getpid()) + ') %(message)s' if DEBUG else '%(message)s')
     formatter = logging.Formatter(log_format)
     console.setFormatter(formatter)
-    fh.setFormatter(formatter)
     log.propagate = False
     log.addHandler(console)
-    log.addHandler(fh)
 
 
 def make_default_config(path=CONFIG_PATH):
