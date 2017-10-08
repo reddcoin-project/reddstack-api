@@ -12,7 +12,7 @@ from version import __version__
 
 DEBUG = True
 VERSION = __version__
-NETWORK = 'testnet'
+NETWORK = 'mainnet'
 
 # configuration
 DATABASE = 'minitwit.db'
@@ -22,8 +22,7 @@ SECRET_KEY = 'development key'
 PRIV_KEY = 'cMzw5mKhb6jjqjp8EdUSCmdpLDg17BUeXVcGdpwk95URmZvFpR3j'
 
 DEFAULT_BLOCKSTORED_PORT = '6264'
-DEFAULT_BLOCKSTORED_SERVER = "www.redd.ink"
-#DEFAULT_BLOCKSTORED_SERVER = "localhost"
+DEFAULT_BLOCKSTORED_SERVER = "localhost"
 
 # initialize to default settings
 BLOCKSTORED_SERVER = DEFAULT_BLOCKSTORED_SERVER
