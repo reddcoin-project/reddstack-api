@@ -1,26 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
 <!-- Start reward Body -->
-
-
   <div class="container text-center">
   <h2>Sign Up</h2>
   <br>
   {% if error %}<div class="error"><strong>Error:</strong> {{ error }}</div>{% endif %}
-  <form action="" method="post">
+  <div class='error' id="error"></div>
+  <div class='preorder' id="preorder"></div>
+  <div class='register' id="register"></div>
+  <form id="register" method="POST" action='#'>
     <dl>
       <dt>Username:
-      <dd><input type="text" name="username" size="30" value="{{ request.form.username }}">
+      <dd><input type="text" name="register_name" id="register_name" size="30" placeholder="blockchain id">
       <dt>E-Mail:
-      <dd><input type="text" name="email" size="30" value="{{ request.form.email }}">
+      <dd><input type="text" name="register_email" id="register_email" size="30" placeholder="email address">
       <dt>Password:
-      <dd><input type="password" name="password" size="30">
+      <dd><input type="password" name="register_pwd" id="register_pwd" size="30">
       <dt>Password <small>(repeat)</small>:
-      <dd><input type="password" name="password2" size="30">
+      <dd><input type="password" name="register_pwd2" id="register_pwd2" size="30">
     </dl>
     <div class="actions"><input type="submit" value="Sign Up"></div>
   </form>
-
+  <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
   </div>
+  <h2>Receive:</h2>
+  <div id="log"></div>
 <!-- End reward Body -->
 {% endblock %}
