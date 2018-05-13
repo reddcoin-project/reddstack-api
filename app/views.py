@@ -9,29 +9,35 @@ from app import app, socketio
 from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, rooms, disconnect
 from .forms import LookupForm, PriceForm, LookupAllnamesForm, NamespaceLookupForm, NamespacePriceForm
 
-import config
+from blockstore_client import config, client, schemas, parsing, user, storage, drivers
+#import config
 #import client
 
-from blockstore_client import client, schemas, parsing, user
-from blockstore_client import storage, drivers
-from blockstore_client.utils import pretty_dump, print_result
+#from blockstore_client import client, schemas, parsing, user
+#from blockstore_client import storage, drivers
+#networkfrom blockstore_client.utils import pretty_dump, print_result
 
 executor = ThreadPoolExecutor(2)
 
+#conf = config.get_config()
+
+#if conf is None:
+#    print("Failed to load config")
+#    sys.exit(1)
+
+#reddstack_server = conf['server']
+#reddstack_port = conf['port']
+#reddstack_storage = conf['storage_drivers']
+
+#log = config.log
+from ConfigParser import SafeConfigParser
 conf = config.get_config()
+conf["network"] = "mainnet"
+print conf
+proxy = client.session(conf, conf['server'], conf['port'])
+#client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage) 
 
-if conf is None:
-    print("Failed to load config")
-    sys.exit(1)
-
-reddstack_server = conf['server']
-reddstack_port = conf['port']
-reddstack_storage = conf['storage_drivers']
-
-log = config.log
-
-proxy = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage) 
-
+print("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
 def get_db():
     """Opens a new database connection if there is none yet for the
     current application context.
@@ -76,7 +82,7 @@ def get_user_id(username):
     return rv[0] if rv else None
 
 def get_blockchain_id(username):
-    data = json.dumps(client.get_name_blockchain_record(str(username + '.test')))
+    data = json.dumps(client.get_name_blockchain_record(str(username + '.tester')))
     data = json.loads(data)
     if 'name' in data:
         return (data['name'])
@@ -94,7 +100,7 @@ def before_request():
 def test():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
 
     return render_template("test.html", async_mode=socketio.async_mode, **resp)
     #BASE
@@ -102,7 +108,7 @@ def test():
 def home():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
 
     return render_template("index.html", **resp)
 
@@ -110,35 +116,35 @@ def home():
 def what_is():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     return render_template('what_is_reddid.html', **resp )
 
 @app.route('/how_does_it_work')
 def how_does_it_work():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     return render_template('how_does_it_work.html', **resp )
 
 @app.route('/acknowledge')
 def acknowledge():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     return render_template('acknowledge.html', **resp )
 
 @app.route('/reward')
 def reward():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     return render_template('reward.html', **resp )
 
 @app.route('/promote')
 def promote():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     return render_template('promote.html', **resp )
 
 
@@ -146,7 +152,7 @@ def promote():
 def register():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
 
     """Registers the user."""
     if g.user:
@@ -192,14 +198,14 @@ def registration_status():
     resp = {}
     error = None
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     return render_template('registration_status.html', error=error, **resp)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
 
     """Logs the user in."""
     if g.user:
@@ -223,7 +229,7 @@ def login():
 def logout():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     session.pop('logged_in', None)
     session.pop('user_id', None)
     flash('You have logged out')
@@ -233,7 +239,7 @@ def logout():
 def details():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     """Logs the user in."""
     if not g.user:
         return redirect(url_for('login'))
@@ -244,7 +250,7 @@ def details():
 def name_details():
     resp = {}
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     return render_template('name_details.html', **resp )
 
 
@@ -258,7 +264,7 @@ def name_lookup():
     resp['name'] = ''
     resp['status'] = ''
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
 
     if request.method == 'POST':
         username = request.form['nameid']
@@ -266,14 +272,14 @@ def name_lookup():
             return render_template('name_lookup.html', form=form, **resp )
 
         resp['name'] = username
-        resp['status'] = client.get_name_blockchain_record(str(username + '.test'))
+        resp['status'] = client.get_name_blockchain_record(str(username + '.tester'))
     return render_template('name_lookup.html', form=form, **resp )
     
 @app.route('/api/name/lookup/<name>')
 def api_name_lookup(name):
     data = {}
 
-    name = name + '.test'
+    name = name + '.tester'
 
     data['blockchain_record'] = client.get_name_blockchain_record(str(name))
     try:
@@ -296,7 +302,7 @@ def name_allnames():
     resp['namespace'] = ''
     resp['status'] = ''
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     if request.method == 'POST':
         namespace = request.form['namespace']
         if namespace == '':
@@ -331,18 +337,18 @@ def name_price():
     resp = {}
     resp['price']=0
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
     if request.method == 'POST':
         username = request.form['username']
         if username == '':
             return render_template('name_price.html', form=form, **resp)
         resp['name'] = username
-        resp['price'] = client.get_name_cost(str(username + '.test'))
+        resp['price'] = client.get_name_cost(str(username + '.tester'))
     return render_template('name_price.html', form=form, **resp)
 
 @app.route('/api/name/price/<name>')
 def api_name_price(name):
-    data = json.dumps(client.get_name_cost(str(name + '.test')))
+    data = json.dumps(client.get_name_cost(str(name + '.tester')))
     resp = Response(response=data,
     status=200, \
     mimetype="application/json")
@@ -368,7 +374,7 @@ def namespace_lookup():
     resp['name'] = ''
     resp['status'] = ''
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
 
     if request.method == 'POST':
         namespace = request.form['namespace']
@@ -400,7 +406,7 @@ def namespace_price():
     resp['status'] = ''
     resp['price'] = 0
     resp['version'] = format(config.VERSION)
-    resp['network'] = format(config.NETWORK)
+    resp['network'] = format(conf['network'])
 
     if request.method == 'POST':
         namespace = request.form['namespace']
@@ -644,20 +650,25 @@ def get_tx_hash(msg):
 @socketio.on('getcost', namespace='/account')
 def get_cost(msg):
     print msg
-    result = json.dumps(client.get_name_cost(str(msg['data'] + '.test')))
+    reply = {}
+    result = json.dumps(client.get_name_cost(str(msg['data'] + '.tester')))
     result = json.loads(result)
     #result = json.dumps(client.gettxinfo(msg['tx_hash']))
-    available = client.get_name_record(msg['data'] + '.test')
+    available = client.get_name_record(msg['data'] + '.tester')
     print available
     
     result['uid'] = msg['data']
-    if 'error' in client.get_name_blockchain_record(msg['data'] + '.test'):
+    if 'error' in client.get_name_blockchain_record(msg['data'] + '.tester'):
         result['status'] = 'not found'
     else:
         result['status'] = 'found'
 
     print result
-    emit('receivecost', result)
+    reply['type'] = 'cost'
+    reply['payload'] = result 
+    emit('response',reply)
+    return reply
+    #emit('receivecost', result)
 
 @socketio.on('preorder', namespace='/account')
 def acc_preorder(msg):
@@ -665,7 +676,7 @@ def acc_preorder(msg):
     error = None
     success = None
     reply = {}
-    namespace = 'test'
+    namespace = 'tester'
     uid = msg['uid']
     owningAddr = msg['owningAddr']['addr']
     payingAddr = msg['payingAddr']['priv']
