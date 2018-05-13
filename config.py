@@ -22,7 +22,7 @@ SECRET_KEY = 'development key'
 PRIV_KEY = 'cMzw5mKhb6jjqjp8EdUSCmdpLDg17BUeXVcGdpwk95URmZvFpR3j'
 
 DEFAULT_BLOCKSTORED_PORT = '6264'
-DEFAULT_BLOCKSTORED_SERVER = "localhost"
+DEFAULT_BLOCKSTORED_SERVER = "reddid01.reddcoin.com"
 
 # initialize to default settings
 BLOCKSTORED_SERVER = DEFAULT_BLOCKSTORED_SERVER
