@@ -678,31 +678,31 @@ def acc_preorder(msg):
     reply = {}
     namespace = 'tester'
     uid = msg['uid']
-    owningAddr = msg['owningAddr']['addr']
-    payingAddr = msg['payingAddr']['priv']
+    owningAddr = msg['owningAddr']
+    publicKey = msg['publicKey']
     username = uid + '.' + namespace
     if get_blockchain_id(username) is not None:
         error = 'The blockchain id is already taken'
 
     print username
     print owningAddr
-    print payingAddr
+    print publicKey
     # preorder UID, paying privkey, [owning addr]
 
     #preorder_result = json.dumps(client.preorder(username, config.PRIV_KEY, owningAddr))
-    preorder_result = json.dumps(client.preorder(username, payingAddr, owningAddr))
+    preorder_result = json.dumps(client.preorder_unsigned(username, publicKey, owningAddr))
     preorder_result = json.loads(preorder_result)
     #preorder_result['operation'] = 'preorder'
     reply['type'] = 'preorder'
     reply['payload'] = preorder_result
     print('Blockchain result: %s' % str(reply))
 
-    if 'success' in preorder_result:
+    if not 'error' in preorder_result:
         print "Success in preorder "
         #emit('preorder', preorder_result)
         emit('response', reply)
 
-    elif 'error' in preorder_result:
+    else:
         print "Error in preorder " + preorder_result['error']
         #emit('preorder', {'error': preorder_result['error']})
         emit('response', reply)
