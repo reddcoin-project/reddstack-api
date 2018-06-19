@@ -715,26 +715,27 @@ def acc_register(msg):
     error = None
     success = None
     reply ={}
-    namespace = 'test'
+    namespace = 'tester'
     uid = msg['uid']
-    owningAddr = msg['owningAddr']['addr']
-    payingAddr = msg['payingAddr']['priv']
+    owningAddr = msg['owningAddr']
+    publicKey = msg['publicKey']
     username = uid + '.' + namespace
 
     ## send a register request
-    register_result = json.dumps(client.register(username, payingAddr, owningAddr))
+    #register_result = json.dumps(client.register(username, payingAddr, owningAddr))
+    register_result = json.dumps(client.register_unsigned(username, publicKey, owningAddr))
     register_result = json.loads(register_result)
     #register_result['type'] = 'register'
     reply['type'] = 'register'
     reply['payload'] = register_result
     print ('Blockchain result: %s' % str(reply))
 
-    if 'success' in register_result:
+    if not 'error' in register_result:
         print "Success in register "
         #emit('register', register_result)
         emit('response', reply)
 
-    elif 'error' in register_result:
+    else:
         print "Error in register " + register_result['error']
         #emit('register', {'error': register_result['error']})
         emit('response', reply)
