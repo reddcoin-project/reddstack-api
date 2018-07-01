@@ -10,7 +10,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, ro
 from .forms import LookupForm, PriceForm, LookupAllnamesForm, NamespaceLookupForm, NamespacePriceForm
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
-import config
+#from .config
 #import client
 
 #from blockstore_client import client, schemas, parsing, user
@@ -36,6 +36,32 @@ conf["network"] = "mainnet"
 print conf
 proxy = client.session(conf, conf['server'], conf['port'])
 #client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage) 
+
+# borrowed from Blockstore
+# these never change, so it's fine to duplicate them here
+# op-return formats
+LENGTHS = {
+    'magic_bytes': 2,
+    'opcode': 1,
+    'preorder_name_hash': 20,
+    'consensus_hash': 16,
+    'namelen': 1,
+    'name_min': 1,
+    'name_max': 34,
+    'name_hash': 16,
+    'update_hash': 20,
+    'data_hash': 20,
+    'blockchain_id_name': 37,
+    'blockchain_id_namespace_life': 4,
+    'blockchain_id_namespace_coeff': 1,
+    'blockchain_id_namespace_base': 1,
+    'blockchain_id_namespace_buckets': 8,
+    'blockchain_id_namespace_discounts': 1,
+    'blockchain_id_namespace_version': 2,
+    'blockchain_id_namespace_id': 19,
+    'announce': 20,
+    'max_op_length': 40
+}
 
 print("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
 def get_db():
@@ -317,7 +343,9 @@ def api_name_allnames(namespace):
     # Sanity checks
     if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
         print "Blockchain Namespace ID too long"
-        return {"error": "Name too long"}
+        data = {}
+        data['error'] = "Name too long"
+        return json.dumps(data)
 
     data = json.dumps(client.get_names_in_namespace(str(namespace),None,None))
     data = json.loads(data)
