@@ -313,6 +313,12 @@ def name_allnames():
 
 @app.route('/api/name/allnames/<namespace>')
 def api_name_allnames(namespace):
+
+    # Sanity checks
+    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
+        print "Blockchain Namespace ID too long"
+        return {"error": "Name too long"}
+
     data = json.dumps(client.get_names_in_namespace(str(namespace),None,None))
     data = json.loads(data)
     #data = json.dumps(data)
@@ -348,6 +354,11 @@ def name_price():
 
 @app.route('/api/name/price/<name>')
 def api_name_price(name):
+    # Sanity checks
+    if len(name) > LENGTHS['blockchain_id_name']:
+        print "Blockchain ID too long"
+        return {"error": "Name too long"}
+
     data = json.dumps(client.get_name_cost(str(name + '.tester')))
     resp = Response(response=data,
     status=200, \
@@ -390,6 +401,11 @@ def namespace_lookup():
 
 @app.route('/api/namespace/lookup/<namespace>')
 def api_namespace_lookup(namespace):
+    # Sanity checks
+    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
+        print "Blockchain Namespace ID too long"
+        return {"error": "Name too long"}
+
     data = json.dumps(client.get_namespace_blockchain_record(str(namespace)))
     print data
     resp = Response(response=data,
@@ -424,6 +440,10 @@ def namespace_price():
 
 @app.route('/api/namespace/price/<namespace>')
 def api_namespace_price(namespace):
+    # Sanity checks
+    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
+        print "Blockchain Namespace ID too long"
+        return {"error": "Name too long"}
 
     data = json.dumps(client.get_namespace_cost(str(namespace)))
     print data
@@ -832,3 +852,4 @@ def getuseraddr(uid):
         if uid == user['uid']:
             print ('Matched uid %s' % str(user['uid']))
             return user['address']
+
