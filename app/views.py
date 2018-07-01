@@ -10,7 +10,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, ro
 from .forms import LookupForm, PriceForm, LookupAllnamesForm, NamespaceLookupForm, NamespacePriceForm
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
-#import config
+import config
 #import client
 
 #from blockstore_client import client, schemas, parsing, user
