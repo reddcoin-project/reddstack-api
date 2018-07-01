@@ -28,3 +28,4 @@ LENGTHS = {
     'blockchain_id_namespace_id': 19,
     'announce': 20,
     'max_op_length': 40
+}
