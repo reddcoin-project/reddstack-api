@@ -61,7 +61,7 @@ print("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
 
 
 def checkLength (data, operation):
-    if len(data) > LENGTH[operation]:
+    if len(data) > LENGTHS[operation]:
         return False
     return True
 
