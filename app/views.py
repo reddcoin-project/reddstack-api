@@ -7,7 +7,6 @@ from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 from app import app, socketio
 from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, rooms, disconnect
-from .forms import LookupForm, PriceForm, LookupAllnamesForm, NamespaceLookupForm, NamespacePriceForm
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
 #from .config
