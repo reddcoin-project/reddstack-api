@@ -107,17 +107,16 @@ def api_name_lookup(name):
 @app.route('/api/name/allnames/<namespace>')
 def api_name_allnames(namespace):
 
-    data = {}
-
     # Sanity checks
     if checkLength(namespace, 'blockchain_id_namespace_id'):
 
         try:
-            data['records'] = client.get_names_in_namespace(str(namespace),None,None)
+            data = client.get_names_in_namespace(str(namespace),None,None)
         except Exception as e:
             handle_exception(e)
     else:
-        data['error'] = 'imput data not valid'
+        data = {}
+        data['error'] = 'input data not valid'
 
     resp = Response(response=json.dumps(data),
     status=200, \
