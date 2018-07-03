@@ -21,4 +21,4 @@
 """
 
 # this is the only place where version should be updated
-__version__ = '0.0.0.1'
+__version__ = '0.0.0.2'
