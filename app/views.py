@@ -60,6 +60,11 @@ LENGTHS = {
 print("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
 
 
+def checkLength (data, operation):
+    if len(data) > LENGTH[operation]:
+        return False
+    return True
+
 
 def get_blockchain_id(username):
     data = json.dumps(client.get_name_blockchain_record(str(username + '.tester')))
@@ -68,63 +73,76 @@ def get_blockchain_id(username):
         return (data['name'])
     return None
 
+def handle_exception(e):
+    print(e)
     
 @app.route('/api/name/lookup/<name>')
 def api_name_lookup(name):
+
     data = {}
 
-    name = name + '.tester'
+    # Sanity checks
+    if checkLength(name,'blockchain_id_name'):
+        
+        name = name + '.tester'
 
-    data['blockchain_record'] = client.get_name_blockchain_record(str(name))
-    try:
-        data_id = data['blockchain_record']['value_hash']
-        data['data_record'] = json.loads(client.get_immutable(str(name), data_id)['data'])
-    except:
-        data['data_record'] = None
+        data['blockchain_record'] = client.get_name_blockchain_record(str(name))
+        try:
+            data_id = data['blockchain_record']['value_hash']
+            data['data_record'] = json.loads(client.get_immutable(str(name), data_id)['data'])
+        except Exception as e:
+            handle_exception(e)
+            data['data_record'] = None
+
+    else:
+        data['error'] = 'input data not valid'
 
     resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
     return (resp)
 
+
 #NAME All names
 @app.route('/api/name/allnames/<namespace>')
 def api_name_allnames(namespace):
 
-    # Sanity checks
-    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
-        print "Blockchain Namespace ID too long"
-        data = {}
-        data['error'] = "Name too long"
-        return json.dumps(data)
+    data = {}
 
-    data = json.dumps(client.get_names_in_namespace(str(namespace),None,None))
-    data = json.loads(data)
-    #data = json.dumps(data)
-    print data
-    if 'results' in data:
-        data = data['results']
-    elif 'error' in data:
-        data = data
+    # Sanity checks
+    if checkLength(namespace, 'blockchain_id_namespace_id'):
+
+        try:
+            data['records'] = client.get_names_in_namespace(str(namespace),None,None)
+        except Exception as e:
+            handle_exception(e)
     else:
-        data = {}
+        data['error'] = 'imput data not valid'
 
     resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
-    return (resp) 
-
+    return (resp)
 
 #NAME Price
 @app.route('/api/name/price/<name>')
 def api_name_price(name):
-    # Sanity checks
-    if len(name) > LENGTHS['blockchain_id_name']:
-        print "Blockchain ID too long"
-        return {"error": "Name too long"}
 
-    data = json.dumps(client.get_name_cost(str(name + '.tester')))
-    resp = Response(response=data,
+    data = {}
+
+    # Sanity checks
+    if checkLength(name,'blockchain_id_name'):
+        
+        name = name + '.tester'
+
+        try:
+            data['record'] = client.get_name_cost(str(name))
+        except Exception as e:
+            handle_exception(e)
+    else:
+        data['error'] = 'input data not valid'
+
+    resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
     return (resp)
@@ -133,29 +151,40 @@ def api_name_price(name):
 #NAMESPACE 
 @app.route('/api/namespace/lookup/<namespace>')
 def api_namespace_lookup(namespace):
-    # Sanity checks
-    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
-        print "Blockchain Namespace ID too long"
-        return {"error": "Name too long"}
 
-    data = json.dumps(client.get_namespace_blockchain_record(str(namespace)))
-    print data
-    resp = Response(response=data,
+    data = {}
+
+    # Sanity checks
+    if checkLength(namespace,'blockchain_id_namespace_id'):
+        try:
+            data['record'] = client.get_namespace_blockchain_record(str(namespace))
+        except Exception as e:
+            handle_exception(e)
+    else:
+        data['error'] = 'input data not valid'
+
+    resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
     return (resp)
 
+
 #NAMESPACE price
 @app.route('/api/namespace/price/<namespace>')
 def api_namespace_price(namespace):
-    # Sanity checks
-    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
-        print "Blockchain Namespace ID too long"
-        return {"error": "Name too long"}
 
-    data = json.dumps(client.get_namespace_cost(str(namespace)))
-    print data
-    resp = Response(response=data,
+    data = {}
+
+    # Sanity checks
+    if checkLength(namespace,'blockchain_id_namespace_id'):
+        try:
+            data['record'] = client.get_namespace_cost(str(namespace))
+        except Exception as e:
+            handle_exception(e)
+    else:
+        data['error'] = 'input data not valid'
+
+    resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
     return (resp)
