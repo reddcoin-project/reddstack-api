@@ -93,8 +93,7 @@ def api_name_lookup(name):
             data['data_record'] = json.loads(client.get_immutable(str(name), data_id)['data'])
         except Exception as e:
             handle_exception(e)
-            data['data_record'] = None
-
+            data['error'] = 'Cannot connect to server'
     else:
         data['error'] = 'input data not valid'
 
@@ -107,7 +106,7 @@ def api_name_lookup(name):
 #NAME All names
 @app.route('/api/name/allnames/<namespace>')
 def api_name_allnames(namespace):
-
+    data = {}
     # Sanity checks
     if checkLength(namespace, 'blockchain_id_namespace_id'):
 
@@ -115,8 +114,8 @@ def api_name_allnames(namespace):
             data = client.get_names_in_namespace(str(namespace),None,None)
         except Exception as e:
             handle_exception(e)
+            data['error'] = 'Cannot connect to server'
     else:
-        data = {}
         data['error'] = 'input data not valid'
 
     resp = Response(response=json.dumps(data),
@@ -127,7 +126,7 @@ def api_name_allnames(namespace):
 #NAME Price
 @app.route('/api/name/price/<name>')
 def api_name_price(name):
-
+    data = {}
     # Sanity checks
     if checkLength(name,'blockchain_id_name'):
         
@@ -137,8 +136,8 @@ def api_name_price(name):
             data = client.get_name_cost(str(name))
         except Exception as e:
             handle_exception(e)
+            data['error'] = 'Cannot connect to server'
     else:
-        data = {}
         data['error'] = 'input data not valid'
 
     resp = Response(response=json.dumps(data),
@@ -150,15 +149,15 @@ def api_name_price(name):
 #NAMESPACE 
 @app.route('/api/namespace/lookup/<namespace>')
 def api_namespace_lookup(namespace):
-
+    data = {}
     # Sanity checks
     if checkLength(namespace,'blockchain_id_namespace_id'):
         try:
             data = client.get_namespace_blockchain_record(str(namespace))
         except Exception as e:
             handle_exception(e)
+            data['error'] = 'Cannot connect to server'
     else:
-        data = {}
         data['error'] = 'input data not valid'
 
     resp = Response(response=json.dumps(data),
@@ -170,15 +169,15 @@ def api_namespace_lookup(namespace):
 #NAMESPACE price
 @app.route('/api/namespace/price/<namespace>')
 def api_namespace_price(namespace):
-
+    data = {}
     # Sanity checks
     if checkLength(namespace,'blockchain_id_namespace_id'):
         try:
             data = client.get_namespace_cost(str(namespace))
         except Exception as e:
             handle_exception(e)
+            data['error'] = 'Cannot connect to server'
     else:
-        data = {}
         data['error'] = 'input data not valid'
 
     resp = Response(response=json.dumps(data),
