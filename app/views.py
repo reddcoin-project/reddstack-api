@@ -74,6 +74,7 @@ def get_blockchain_id(username):
     return None
 
 def handle_exception(e):
+    print "Exception Occurred"
     print(e)
     
 @app.route('/api/name/lookup/<name>')
