@@ -29,7 +29,7 @@ conf = config.get_config()
 conf["network"] = "mainnet"
 print conf
 proxy = client.session(conf, conf['server'], conf['port'])
-#client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage) 
+#client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage)
 
 # borrowed from Blockstore
 # these never change, so it's fine to duplicate them here
@@ -76,7 +76,7 @@ def get_blockchain_id(username):
 def handle_exception(e):
     print "Exception Occurred"
     print(e)
-    
+
 @app.route('/api/name/lookup/<name>')
 def api_name_lookup(name):
 
@@ -84,7 +84,7 @@ def api_name_lookup(name):
 
     # Sanity checks
     if checkLength(name,'blockchain_id_name'):
-        
+
         name = name + '.tester'
 
         data['blockchain_record'] = client.get_name_blockchain_record(str(name))
@@ -129,7 +129,7 @@ def api_name_price(name):
     data = {}
     # Sanity checks
     if checkLength(name,'blockchain_id_name'):
-        
+
         name = name + '.tester'
 
         try:
@@ -146,7 +146,7 @@ def api_name_price(name):
     return (resp)
 
 
-#NAMESPACE 
+#NAMESPACE
 @app.route('/api/namespace/lookup/<namespace>')
 def api_namespace_lookup(namespace):
     data = {}
@@ -287,7 +287,7 @@ def background_thread_currentblock():
     while True:
         socketio.sleep(10)
         data = client.getinfo() #json.dumps(client.getinfo())
-        
+
         if 'bitcoind_blocks' in data:
             height = data['bitcoind_blocks']
             blockheight += 1
@@ -302,7 +302,7 @@ def background_thread_currentblock():
         socketio.emit('response', reply,
                       namespace='/account')
 # Connect to server
-@socketio.on('connect', namespace='/account') 
+@socketio.on('connect', namespace='/account')
 def test_connect():
     global thread
     global thread_blockheight
@@ -356,7 +356,7 @@ def acc_register_(message):
           username, email, pw_hash) values (?, ?, ?)''',
           [message['username'], message['email'],
            generate_password_hash(message['pwd1'])])
-        
+
 
         username = message['username'] + '.' + namespace
         print username
@@ -409,7 +409,7 @@ def get_cost(msg):
     #result = json.dumps(client.gettxinfo(msg['tx_hash']))
     available = client.get_name_record(msg['data'] + '.tester')
     print available
-    
+
     result['uid'] = msg['data']
     if 'error' in client.get_name_blockchain_record(msg['data'] + '.tester'):
         result['status'] = 'not found'
@@ -418,10 +418,25 @@ def get_cost(msg):
 
     print result
     reply['type'] = 'cost'
-    reply['payload'] = result 
+    reply['payload'] = result
     emit('response',reply)
     return reply
     #emit('receivecost', result)
+
+@socketio.on('lookup', namespace='/account')
+def lookup(msg):
+    print msg
+    reply = {}
+    try:
+        result = client.get_name_blockchain_record(msg['data'] + '.tester')
+    except Exception as e:
+        handle_exception(e)
+        result['error'] = 'Cannot connect to server'
+
+    print result
+    reply['type'] = 'lookup'
+    reply['payload'] = json.dumps(result)
+    emit('response',reply)
 
 @socketio.on('preorder', namespace='/account')
 def acc_preorder(msg):
