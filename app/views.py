@@ -523,7 +523,10 @@ def acc_update(msg):
     name = msg['user']
     name = name + '.' + DEFAULT_NAMESPACE
     publicKey = msg['publicKey']
-    tx_hash = msg['tx_hash']
+    if msg['tx_hash'] == '':
+        tx_hash = None
+    else:
+        tx_hash = msg['tx_hash']
     payload = json.dumps(msg['profile'])
 
     print "Payload = " + payload
