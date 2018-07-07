@@ -440,7 +440,7 @@ def lookup(msg):
         handle_exception(e)
         result['error'] = 'Cannot connect to server'
 
-    print result
+    # print result
     reply['type'] = 'lookup'
     reply['payload'] = json.dumps(result)
     emit('response',reply)
@@ -516,18 +516,19 @@ def acc_register(msg):
 
 @socketio.on('update', namespace='/account')
 def acc_update(msg):
+    print msg
     error = None
     success = None
     reply ={}
     name = msg['data']
     name = name + '.' + DEFAULT_NAMESPACE
-    owningAddr = msg['owningAddr']['priv']
+    publicKey = msg['publicKey']
     payload = json.dumps(msg['profile'])
 
     print "Payload = " + payload
 
     ## send a update request
-    update_result = json.dumps(client.update(name, payload, owningAddr))
+    update_result = json.dumps(client.update(name, payload, publicKey))
     update_result = json.loads(update_result)
 
     reply['type'] = 'update'
