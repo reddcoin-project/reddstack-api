@@ -528,7 +528,7 @@ def acc_update(msg):
     print "Payload = " + payload
 
     ## send a update request
-    update_result = json.dumps(client.update(name, payload, publicKey))
+    update_result = json.dumps(client.update_unsigned(name, payload, publicKey))
     update_result = json.loads(update_result)
 
     reply['type'] = 'update'
