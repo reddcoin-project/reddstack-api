@@ -1,5 +1,5 @@
 import json
-from sqlite3 import dbapi2 as sqlite3
+
 import requests
 from flask import g, render_template, request, Response, redirect, url_for, session, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
@@ -7,15 +7,9 @@ from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 from app import app, socketio
 from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, rooms, disconnect
-from .forms import LookupForm, PriceForm, LookupAllnamesForm, NamespaceLookupForm, NamespacePriceForm
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
-#from .config
-#import client
 
-#from blockstore_client import client, schemas, parsing, user
-#from blockstore_client import storage, drivers
-#networkfrom blockstore_client.utils import pretty_dump, print_result
 
 executor = ThreadPoolExecutor(2)
 
@@ -35,7 +29,8 @@ conf = config.get_config()
 conf["network"] = "mainnet"
 print conf
 proxy = client.session(conf, conf['server'], conf['port'])
-#client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage) 
+#client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage)
+DEFAULT_NAMESPACE = 'tester'
 
 # borrowed from Blockstore
 # these never change, so it's fine to duplicate them here
@@ -64,418 +59,130 @@ LENGTHS = {
 }
 
 print("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
-def get_db():
-    """Opens a new database connection if there is none yet for the
-    current application context.
-    """
-    top = _app_ctx_stack.top
-    if not hasattr(top, 'sqlite_db'):
-        top.sqlite_db = sqlite3.connect(config.DATABASE)
-        top.sqlite_db.row_factory = sqlite3.Row
-    return top.sqlite_db
-
-@app.teardown_appcontext
-def close_database(exception):
-    """Closes the database again at the end of the request."""
-    top = _app_ctx_stack.top
-    if hasattr(top, 'sqlite_db'):
-        top.sqlite_db.close()
-
-def init_db():
-    """Initializes the database."""
-    db = get_db()
-    with app.open_resource('schema.sql', mode='r') as f:
-        db.cursor().executescript(f.read())
-    db.commit()
-
-@app.cli.command('initdb')
-def initdb_command():
-    """Creates the database tables."""
-    init_db()
-    print('Initialized the database.')
 
 
+def checkLength (data, operation):
+    if len(data) > LENGTHS[operation]:
+        return False
+    return True
 
-def query_db(query, args=(), one=False):
-    """Queries the database and returns a list of dictionaries."""
-    cur = get_db().execute(query, args)
-    rv = cur.fetchall()
-    return (rv[0] if rv else None) if one else rv
 
-def get_user_id(username):
-    """Convenience method to look up the id for a username."""
-    rv = query_db('select user_id from user where username = ?', [username], one=True)
-    return rv[0] if rv else None
-
-def get_blockchain_id(username):
-    data = json.dumps(client.get_name_blockchain_record(str(username + '.tester')))
+def get_blockchain_id(name):
+    name = name + '.' + DEFAULT_NAMESPACE
+    data = json.dumps(client.get_name_blockchain_record(str(name)))
     data = json.loads(data)
     if 'name' in data:
         return (data['name'])
     return None
 
+def handle_exception(e):
+    print "Exception Occurred"
+    print(e)
 
-@app.before_request
-def before_request():
-    g.user = None
-    if 'user_id' in session:
-        g.user = query_db('select * from user where user_id = ?',
-                          [session['user_id']], one=True)
-
-@app.route('/test')
-def test():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-
-    return render_template("test.html", async_mode=socketio.async_mode, **resp)
-    #BASE
-@app.route('/')
-def home():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-
-    return render_template("index.html", **resp)
-
-@app.route('/what_is_reddid')
-def what_is():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    return render_template('what_is_reddid.html', **resp )
-
-@app.route('/how_does_it_work')
-def how_does_it_work():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    return render_template('how_does_it_work.html', **resp )
-
-@app.route('/acknowledge')
-def acknowledge():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    return render_template('acknowledge.html', **resp )
-
-@app.route('/reward')
-def reward():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    return render_template('reward.html', **resp )
-
-@app.route('/promote')
-def promote():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    return render_template('promote.html', **resp )
-
-
-@app.route('/register', methods=['GET'])
-def register():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-
-    """Registers the user."""
-    if g.user:
-        return redirect(url_for('home'))
-    error = None
-    if request.method == 'POST':
-        if not request.form['username']:
-            error = 'You have to enter a username'
-        elif get_blockchain_id(request.form['username']) is not None:
-            error = 'The blockchain id is already taken'
-        elif not request.form['email'] or \
-                '@' not in request.form['email']:
-            error = 'You have to enter a valid email address'
-        elif not request.form['password']:
-            error = 'You have to enter a password'
-        elif request.form['password'] != request.form['password2']:
-            error = 'The two passwords do not match'
-        elif get_user_id(request.form['username']) is not None:
-            error = 'The username is already taken'
-
-        else:
-            db = get_db()
-            db.execute('''insert into user (
-              username, email, pw_hash) values (?, ?, ?)''',
-              [request.form['username'], request.form['email'],
-               generate_password_hash(request.form['password'])])
-            db.commit()
-
-            # Do block chain registration
-            #register_id(request.form['username']+'.test')
-
-            
-            
-            resp['tx_hash'] = result['tx_hash']
-
-
-            flash('You were successfully registered and can login now')
-            return redirect(url_for('registration_status'))
-    return render_template('register.html', error=error, **resp)
-
-@app.route('/registration_status', methods=['GET', 'POST'])
-def registration_status():
-    resp = {}
-    error = None
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    return render_template('registration_status.html', error=error, **resp)
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-
-    """Logs the user in."""
-    if g.user:
-        return redirect(url_for('details'))
-    error = None
-    if request.method == 'POST':
-        user = query_db('''select * from user where
-            username = ?''', [request.form['username']], one=True)
-        if user is None:
-            error = 'Invalid username'
-        elif not check_password_hash(user['pw_hash'],
-                                     request.form['password']):
-            error = 'Invalid password'
-        else:
-            flash('You have logged in')
-            session['user_id'] = user['user_id']
-            return redirect(url_for('details'))
-    return render_template('login.html', error=error, **resp)
-
-@app.route('/logout')
-def logout():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    session.pop('logged_in', None)
-    session.pop('user_id', None)
-    flash('You have logged out')
-    return render_template('logout.html', **resp )
-
-@app.route('/details')
-def details():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    """Logs the user in."""
-    if not g.user:
-        return redirect(url_for('login'))
-    return render_template('details.html', **resp )
-
-#NAME/Identity pages
-@app.route('/name/details')
-def name_details():
-    resp = {}
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    return render_template('name_details.html', **resp )
-
-
-
-
-#NAME Lookup
-@app.route('/name/lookup', methods=['GET', 'POST'])
-def name_lookup():
-    form = LookupForm()
-    resp = {}
-    resp['name'] = ''
-    resp['status'] = ''
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-
-    if request.method == 'POST':
-        username = request.form['nameid']
-        if username == '':
-            return render_template('name_lookup.html', form=form, **resp )
-
-        resp['name'] = username
-        resp['status'] = client.get_name_blockchain_record(str(username + '.tester'))
-    return render_template('name_lookup.html', form=form, **resp )
-    
 @app.route('/api/name/lookup/<name>')
 def api_name_lookup(name):
+
     data = {}
 
-    name = name + '.tester'
+    # Sanity checks
+    if checkLength(name,'blockchain_id_name'):
 
-    data['blockchain_record'] = client.get_name_blockchain_record(str(name))
-    try:
-        data_id = data['blockchain_record']['value_hash']
-        data['data_record'] = json.loads(client.get_immutable(str(name), data_id)['data'])
-    except:
-        data['data_record'] = None
+        name = name + '.' + DEFAULT_NAMESPACE
+
+        data['blockchain_record'] = client.get_name_blockchain_record(str(name))
+        try:
+            data_id = data['blockchain_record']['value_hash']
+            data['data_record'] = json.loads(client.get_immutable(str(name), data_id)['data'])
+        except Exception as e:
+            handle_exception(e)
+            data['error'] = 'Cannot connect to server'
+    else:
+        data['error'] = 'input data not valid'
 
     resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
     return (resp)
+
 
 #NAME All names
-
-@app.route('/name/allnames', methods=['GET', 'POST'])
-def name_allnames():
-    form = LookupAllnamesForm()
-    resp = {}
-    resp['namespace'] = ''
-    resp['status'] = ''
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    if request.method == 'POST':
-        namespace = request.form['namespace']
-        if namespace == '':
-            return render_template('name_allnames.html', form=form, **resp )
-        resp['namespace'] = namespace
-        resp['status'] = client.get_names_in_namespace(str(namespace))
-    return render_template('name_allnames.html', form=form, **resp )
-
 @app.route('/api/name/allnames/<namespace>')
 def api_name_allnames(namespace):
-
+    data = {}
     # Sanity checks
-    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
-        print "Blockchain Namespace ID too long"
-        data = {}
-        data['error'] = "Name too long"
-        return json.dumps(data)
+    if checkLength(namespace, 'blockchain_id_namespace_id'):
 
-    data = json.dumps(client.get_names_in_namespace(str(namespace),None,None))
-    data = json.loads(data)
-    #data = json.dumps(data)
-    print data
-    if 'results' in data:
-        data = data['results']
-    elif 'error' in data:
-        data = data
+        try:
+            data = client.get_names_in_namespace(str(namespace),None,None)
+        except Exception as e:
+            handle_exception(e)
+            data['error'] = 'Cannot connect to server'
     else:
-        data = {}
+        data['error'] = 'input data not valid'
 
     resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
-    return (resp) 
-
+    return (resp)
 
 #NAME Price
-@app.route('/name/price', methods=['GET', 'POST'])
-def name_price():
-    form  = PriceForm()
-    resp = {}
-    resp['price']=0
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-    if request.method == 'POST':
-        username = request.form['username']
-        if username == '':
-            return render_template('name_price.html', form=form, **resp)
-        resp['name'] = username
-        resp['price'] = client.get_name_cost(str(username + '.tester'))
-    return render_template('name_price.html', form=form, **resp)
-
 @app.route('/api/name/price/<name>')
 def api_name_price(name):
+    data = {}
     # Sanity checks
-    if len(name) > LENGTHS['blockchain_id_name']:
-        print "Blockchain ID too long"
-        return {"error": "Name too long"}
+    if checkLength(name,'blockchain_id_name'):
 
-    data = json.dumps(client.get_name_cost(str(name + '.tester')))
-    resp = Response(response=data,
+        name = name + '.' + DEFAULT_NAMESPACE
+
+        try:
+            data = client.get_name_cost(str(name))
+        except Exception as e:
+            handle_exception(e)
+            data['error'] = 'Cannot connect to server'
+    else:
+        data['error'] = 'input data not valid'
+
+    resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
     return (resp)
 
-#NAME register
-@app.route('/name/register')
-def name_register():
-    return render_template('name_register.html')
 
-
-#NAMESPACE 
-#NAME register
-@app.route('/namespace/details')
-def namespace_details():
-    return render_template('what_is_namespace.html')
-
-#NAME Lookup
-@app.route('/namespace/lookup', methods=['GET', 'POST'])
-def namespace_lookup():
-    form = NamespaceLookupForm()
-    resp = {}
-    resp['name'] = ''
-    resp['status'] = ''
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-
-    if request.method == 'POST':
-        namespace = request.form['namespace']
-        if namespace == '':
-            return render_template('namespace_lookup.html', form=form, **resp )
-
-        resp['name'] = namespace
-        resp['status'] = client.get_namespace_blockchain_record(str(namespace))
-    print resp
-
-    return render_template('namespace_lookup.html', form=form, **resp )
-
-
+#NAMESPACE
 @app.route('/api/namespace/lookup/<namespace>')
 def api_namespace_lookup(namespace):
+    data = {}
     # Sanity checks
-    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
-        print "Blockchain Namespace ID too long"
-        return {"error": "Name too long"}
+    if checkLength(namespace,'blockchain_id_namespace_id'):
+        try:
+            data = client.get_namespace_blockchain_record(str(namespace))
+        except Exception as e:
+            handle_exception(e)
+            data['error'] = 'Cannot connect to server'
+    else:
+        data['error'] = 'input data not valid'
 
-    data = json.dumps(client.get_namespace_blockchain_record(str(namespace)))
-    print data
-    resp = Response(response=data,
+    resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
     return (resp)
 
+
 #NAMESPACE price
-@app.route('/namespace/price', methods=['GET', 'POST'])
-def namespace_price():
-    form = NamespacePriceForm()
-    resp = {}
-    resp['name'] = ''
-    resp['status'] = ''
-    resp['price'] = 0
-    resp['version'] = format(config.VERSION)
-    resp['network'] = format(conf['network'])
-
-    if request.method == 'POST':
-        namespace = request.form['namespace']
-        if namespace == '':
-            return render_template('namespace_price.html', form=form, **resp )
-
-        resp['name'] = namespace
-
-        resp['price'] = client.get_namespace_cost(str(namespace))
-
-    print resp
-
-    return render_template('namespace_price.html', form=form, **resp )
-
-
 @app.route('/api/namespace/price/<namespace>')
 def api_namespace_price(namespace):
+    data = {}
     # Sanity checks
-    if len(namespace) > LENGTHS['blockchain_id_namespace_id']:
-        print "Blockchain Namespace ID too long"
-        return {"error": "Name too long"}
+    if checkLength(namespace,'blockchain_id_namespace_id'):
+        try:
+            data = client.get_namespace_cost(str(namespace))
+        except Exception as e:
+            handle_exception(e)
+            data['error'] = 'Cannot connect to server'
+    else:
+        data['error'] = 'input data not valid'
 
-    data = json.dumps(client.get_namespace_cost(str(namespace)))
-    print data
-    resp = Response(response=data,
+    resp = Response(response=json.dumps(data),
     status=200, \
     mimetype="application/json")
     return (resp)
@@ -582,7 +289,7 @@ def background_thread_currentblock():
     while True:
         socketio.sleep(10)
         data = client.getinfo() #json.dumps(client.getinfo())
-        
+
         if 'bitcoind_blocks' in data:
             height = data['bitcoind_blocks']
             blockheight += 1
@@ -597,7 +304,7 @@ def background_thread_currentblock():
         socketio.emit('response', reply,
                       namespace='/account')
 # Connect to server
-@socketio.on('connect', namespace='/account') 
+@socketio.on('connect', namespace='/account')
 def test_connect():
     global thread
     global thread_blockheight
@@ -651,7 +358,7 @@ def acc_register_(message):
           username, email, pw_hash) values (?, ?, ?)''',
           [message['username'], message['email'],
            generate_password_hash(message['pwd1'])])
-        
+
 
         username = message['username'] + '.' + namespace
         print username
@@ -698,25 +405,45 @@ def get_tx_hash(msg):
 @socketio.on('getcost', namespace='/account')
 def get_cost(msg):
     print msg
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     reply = {}
-    result = json.dumps(client.get_name_cost(str(msg['data'] + '.tester')))
+    result = json.dumps(client.get_name_cost(name))
     result = json.loads(result)
     #result = json.dumps(client.gettxinfo(msg['tx_hash']))
-    available = client.get_name_record(msg['data'] + '.tester')
+    available = client.get_name_record(name)
     print available
-    
+
     result['uid'] = msg['data']
-    if 'error' in client.get_name_blockchain_record(msg['data'] + '.tester'):
+    if 'error' in client.get_name_blockchain_record(name):
         result['status'] = 'not found'
     else:
         result['status'] = 'found'
 
     print result
     reply['type'] = 'cost'
-    reply['payload'] = result 
+    reply['payload'] = result
     emit('response',reply)
     return reply
     #emit('receivecost', result)
+
+@socketio.on('lookup', namespace='/account')
+def lookup(msg):
+    print msg
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
+    reply = {}
+    result = {}
+    try:
+        result = client.get_name_blockchain_record(name)
+    except Exception as e:
+        handle_exception(e)
+        result['error'] = 'Cannot connect to server'
+
+    print result
+    reply['type'] = 'lookup'
+    reply['payload'] = json.dumps(result)
+    emit('response',reply)
 
 @socketio.on('preorder', namespace='/account')
 def acc_preorder(msg):
@@ -724,21 +451,21 @@ def acc_preorder(msg):
     error = None
     success = None
     reply = {}
-    namespace = 'tester'
-    uid = msg['uid']
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     owningAddr = msg['owningAddr']
     publicKey = msg['publicKey']
-    username = uid + '.' + namespace
-    if get_blockchain_id(username) is not None:
+
+    if get_blockchain_id(name) is not None:
         error = 'The blockchain id is already taken'
 
-    print username
+    print name
     print owningAddr
     print publicKey
     # preorder UID, paying privkey, [owning addr]
 
     #preorder_result = json.dumps(client.preorder(username, config.PRIV_KEY, owningAddr))
-    preorder_result = json.dumps(client.preorder_unsigned(username, publicKey, owningAddr))
+    preorder_result = json.dumps(client.preorder_unsigned(name, publicKey, owningAddr))
     preorder_result = json.loads(preorder_result)
     #preorder_result['operation'] = 'preorder'
     reply['type'] = 'preorder'
@@ -763,15 +490,14 @@ def acc_register(msg):
     error = None
     success = None
     reply ={}
-    namespace = 'tester'
-    uid = msg['uid']
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     owningAddr = msg['owningAddr']
     publicKey = msg['publicKey']
-    username = uid + '.' + namespace
 
     ## send a register request
     #register_result = json.dumps(client.register(username, payingAddr, owningAddr))
-    register_result = json.dumps(client.register_unsigned(username, publicKey, owningAddr))
+    register_result = json.dumps(client.register_unsigned(name, publicKey, owningAddr))
     register_result = json.loads(register_result)
     #register_result['type'] = 'register'
     reply['type'] = 'register'
@@ -793,16 +519,15 @@ def acc_update(msg):
     error = None
     success = None
     reply ={}
-    namespace = 'test'
-    uid = msg['uid']
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     owningAddr = msg['owningAddr']['priv']
     payload = json.dumps(msg['profile'])
-    username = uid + '.' + namespace
 
     print "Payload = " + payload
 
     ## send a update request
-    update_result = json.dumps(client.update(username, payload, owningAddr))
+    update_result = json.dumps(client.update(name, payload, owningAddr))
     update_result = json.loads(update_result)
 
     reply['type'] = 'update'
