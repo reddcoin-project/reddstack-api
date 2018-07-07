@@ -520,7 +520,7 @@ def acc_update(msg):
     error = None
     success = None
     reply ={}
-    name = msg['data']
+    name = msg['user']
     name = name + '.' + DEFAULT_NAMESPACE
     publicKey = msg['publicKey']
     payload = json.dumps(msg['profile'])
