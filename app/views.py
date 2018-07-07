@@ -535,12 +535,12 @@ def acc_update(msg):
     reply['payload'] = update_result
     print ('Blockchain result: %s' % str(reply))
 
-    if 'success' in update_result:
+    if not 'error' in update_result:
         print "Success in update "
         #emit('register', register_result)
         emit('response', reply)
 
-    elif 'error' in update_result:
+    else:
         print "Error in update " + update_result['error']
         #emit('register', {'error': register_result['error']})
         emit('response', reply)
