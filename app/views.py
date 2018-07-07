@@ -523,12 +523,13 @@ def acc_update(msg):
     name = msg['user']
     name = name + '.' + DEFAULT_NAMESPACE
     publicKey = msg['publicKey']
+    tx_hash = msg['tx_hash']
     payload = json.dumps(msg['profile'])
 
     print "Payload = " + payload
 
     ## send a update request
-    update_result = json.dumps(client.update_unsigned(name, payload, publicKey))
+    update_result = json.dumps(client.update_unsigned(name, payload, publicKey, tx_hash))
     update_result = json.loads(update_result)
 
     reply['type'] = 'update'
