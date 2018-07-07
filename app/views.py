@@ -30,6 +30,7 @@ conf["network"] = "mainnet"
 print conf
 proxy = client.session(conf, conf['server'], conf['port'])
 #client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage)
+DEFAULT_NAMESPACE = 'tester'
 
 # borrowed from Blockstore
 # these never change, so it's fine to duplicate them here
@@ -66,8 +67,9 @@ def checkLength (data, operation):
     return True
 
 
-def get_blockchain_id(username):
-    data = json.dumps(client.get_name_blockchain_record(str(username + '.tester')))
+def get_blockchain_id(name):
+    name = name + '.' + DEFAULT_NAMESPACE
+    data = json.dumps(client.get_name_blockchain_record(str(name)))
     data = json.loads(data)
     if 'name' in data:
         return (data['name'])
@@ -85,7 +87,7 @@ def api_name_lookup(name):
     # Sanity checks
     if checkLength(name,'blockchain_id_name'):
 
-        name = name + '.tester'
+        name = name + '.' + DEFAULT_NAMESPACE
 
         data['blockchain_record'] = client.get_name_blockchain_record(str(name))
         try:
@@ -130,7 +132,7 @@ def api_name_price(name):
     # Sanity checks
     if checkLength(name,'blockchain_id_name'):
 
-        name = name + '.tester'
+        name = name + '.' + DEFAULT_NAMESPACE
 
         try:
             data = client.get_name_cost(str(name))
@@ -403,15 +405,17 @@ def get_tx_hash(msg):
 @socketio.on('getcost', namespace='/account')
 def get_cost(msg):
     print msg
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     reply = {}
-    result = json.dumps(client.get_name_cost(str(msg['data'] + '.tester')))
+    result = json.dumps(client.get_name_cost(name))
     result = json.loads(result)
     #result = json.dumps(client.gettxinfo(msg['tx_hash']))
-    available = client.get_name_record(msg['data'] + '.tester')
+    available = client.get_name_record(name)
     print available
 
     result['uid'] = msg['data']
-    if 'error' in client.get_name_blockchain_record(msg['data'] + '.tester'):
+    if 'error' in client.get_name_blockchain_record(name):
         result['status'] = 'not found'
     else:
         result['status'] = 'found'
@@ -426,10 +430,12 @@ def get_cost(msg):
 @socketio.on('lookup', namespace='/account')
 def lookup(msg):
     print msg
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     reply = {}
     result = {}
     try:
-        result = client.get_name_blockchain_record(msg['data'] + '.tester')
+        result = client.get_name_blockchain_record(name)
     except Exception as e:
         handle_exception(e)
         result['error'] = 'Cannot connect to server'
@@ -445,21 +451,21 @@ def acc_preorder(msg):
     error = None
     success = None
     reply = {}
-    namespace = 'tester'
-    uid = msg['uid']
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     owningAddr = msg['owningAddr']
     publicKey = msg['publicKey']
-    username = uid + '.' + namespace
-    if get_blockchain_id(username) is not None:
+
+    if get_blockchain_id(name) is not None:
         error = 'The blockchain id is already taken'
 
-    print username
+    print name
     print owningAddr
     print publicKey
     # preorder UID, paying privkey, [owning addr]
 
     #preorder_result = json.dumps(client.preorder(username, config.PRIV_KEY, owningAddr))
-    preorder_result = json.dumps(client.preorder_unsigned(username, publicKey, owningAddr))
+    preorder_result = json.dumps(client.preorder_unsigned(name, publicKey, owningAddr))
     preorder_result = json.loads(preorder_result)
     #preorder_result['operation'] = 'preorder'
     reply['type'] = 'preorder'
@@ -484,15 +490,14 @@ def acc_register(msg):
     error = None
     success = None
     reply ={}
-    namespace = 'tester'
-    uid = msg['uid']
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     owningAddr = msg['owningAddr']
     publicKey = msg['publicKey']
-    username = uid + '.' + namespace
 
     ## send a register request
     #register_result = json.dumps(client.register(username, payingAddr, owningAddr))
-    register_result = json.dumps(client.register_unsigned(username, publicKey, owningAddr))
+    register_result = json.dumps(client.register_unsigned(name, publicKey, owningAddr))
     register_result = json.loads(register_result)
     #register_result['type'] = 'register'
     reply['type'] = 'register'
@@ -514,16 +519,15 @@ def acc_update(msg):
     error = None
     success = None
     reply ={}
-    namespace = 'test'
-    uid = msg['uid']
+    name = msg['data']
+    name = name + '.' + DEFAULT_NAMESPACE
     owningAddr = msg['owningAddr']['priv']
     payload = json.dumps(msg['profile'])
-    username = uid + '.' + namespace
 
     print "Payload = " + payload
 
     ## send a update request
-    update_result = json.dumps(client.update(username, payload, owningAddr))
+    update_result = json.dumps(client.update(name, payload, owningAddr))
     update_result = json.loads(update_result)
 
     reply['type'] = 'update'
