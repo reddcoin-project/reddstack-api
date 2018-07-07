@@ -427,6 +427,7 @@ def get_cost(msg):
 def lookup(msg):
     print msg
     reply = {}
+    result = {}
     try:
         result = client.get_name_blockchain_record(msg['data'] + '.tester')
     except Exception as e:
