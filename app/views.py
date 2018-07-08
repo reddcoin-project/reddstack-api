@@ -522,17 +522,17 @@ def acc_update(msg):
     reply ={}
     name = msg['user']
     name = name + '.' + DEFAULT_NAMESPACE
-    publicKey = msg['publicKey']
-    if msg['tx_hash'] == '':
-        tx_hash = None
-    else:
-        tx_hash = msg['tx_hash']
     payload = json.dumps(msg['profile'])
+    publicKey = msg['publicKey']
 
-    print "Payload = " + payload
+    if 'tx_hash' in msg:
+        # sending the confirmation command
+        tx_hash = msg['tx_hash']
+        update_result = client.update(name, payload, publicKey, tx_hash)
+    else:
+        # generating out update transaction only. Will call the above again soon
+        update_result = client.update_unsigned(name, payload, publicKey, tx_hash)
 
-    ## send a update request
-    update_result = json.dumps(client.update_unsigned(name, payload, publicKey, tx_hash))
     update_result = json.loads(update_result)
 
     reply['type'] = 'update'
