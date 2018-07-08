@@ -531,7 +531,7 @@ def acc_update(msg):
         update_result = client.update(name, payload, publicKey, tx_hash)
     else:
         # generating out update transaction only. Will call the above again soon
-        update_result = client.update_unsigned(name, payload, publicKey, tx_hash)
+        update_result = client.update_unsigned(name, payload, publicKey)
 
     update_result = json.loads(update_result)
 
