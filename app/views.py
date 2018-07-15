@@ -1,5 +1,6 @@
 import json
 from pymongo import MongoClient
+from bson.json_util import loads, dumps
 import requests
 from flask import g, render_template, request, Response, redirect, url_for, session, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
@@ -569,15 +570,15 @@ def acc_network(msg):
     uid = msg['uid']
 
     queryNetwork = networkColls.find({network + ".username": uid})
+    print dumps(queryNetwork[0])
 
     reply['type'] = 'network'
     reply['payload'] = response_result
 
     response_result['network'] = network
     response_result['user'] = uid
-    response_result['address'] = queryNetwork[0]address
+    response_result['address'] = queryNetwork[0][network]['address']
     response_result['success'] = True
-    
 
     print ('network response: %s' % str(reply))
 
