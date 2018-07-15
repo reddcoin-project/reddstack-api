@@ -1,5 +1,5 @@
 import json
-
+from pymongo import MongoClient
 import requests
 from flask import g, render_template, request, Response, redirect, url_for, session, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
@@ -12,6 +12,13 @@ from blockstore_client import config, client, schemas, parsing, user, storage, d
 
 
 executor = ThreadPoolExecutor(2)
+
+# Database Connections
+clientDB = MongoClient('localhost', 27017)
+db = clientDB['socialAccounts']
+# collections
+
+networkColls = db.networks
 
 #conf = config.get_config()
 
@@ -561,12 +568,14 @@ def acc_network(msg):
     network = msg['network']
     uid = msg['uid']
 
+    queryNetwork = networkColls.find({network + ".username": uid})
+
     reply['type'] = 'network'
     reply['payload'] = response_result
 
     response_result['network'] = network
     response_result['user'] = uid
-    response_result['address'] = getuseraddr(uid)
+    response_result['address'] = queryNetwork[0]address
     response_result['success'] = True
     
 
