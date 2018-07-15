@@ -451,7 +451,7 @@ def acc_preorder(msg):
     error = None
     success = None
     reply = {}
-    name = msg['data']
+    name = msg['uid']
     name = name + '.' + DEFAULT_NAMESPACE
     owningAddr = msg['owningAddr']
     publicKey = msg['publicKey']
@@ -490,7 +490,7 @@ def acc_register(msg):
     error = None
     success = None
     reply ={}
-    name = msg['data']
+    name = msg['uid']
     name = name + '.' + DEFAULT_NAMESPACE
     owningAddr = msg['owningAddr']
     publicKey = msg['publicKey']
@@ -516,7 +516,7 @@ def acc_register(msg):
 
 @socketio.on('update', namespace='/account')
 def acc_update(msg):
-    print msg
+    print "Updating: " + str(msg)
     error = None
     success = None
     reply ={}
@@ -528,12 +528,14 @@ def acc_update(msg):
     if 'tx_hash' in msg:
         # sending the confirmation command
         tx_hash = msg['tx_hash']
+        print "Sending Update"
         update_result = client.update(name, payload, publicKey, tx_hash)
     else:
         # generating out update transaction only. Will call the above again soon
+        print "Getting Transaction"
         update_result = client.update_unsigned(name, payload, publicKey)
 
-    update_result = json.loads(update_result)
+    #update_result = json.loads(update_result)
 
     reply['type'] = 'update'
     reply['payload'] = update_result
@@ -550,7 +552,7 @@ def acc_update(msg):
         emit('response', reply)
 
 @socketio.on('network', namespace='/account')
-def acc_update(msg):
+def acc_network(msg):
     error = None
     success = None
     reply ={}
