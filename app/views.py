@@ -453,6 +453,25 @@ def lookup(msg):
     reply['payload'] = json.dumps(result)
     emit('response',reply)
 
+@socketio.on('getimmutable', namespace='/account')
+def getimmutable(msg):
+    print msg
+    name = msg['uid']
+    name = name + '.' + DEFAULT_NAMESPACE
+    value_hash = msg['value_hash']
+    reply = {}      
+    result = {}
+    try:
+        result = client.get_immutable(name, value_hash)
+    except Exception as e:
+        handle_exception(e)
+        result['error'] = 'Cannot connect to server'
+
+    # print result
+    reply['type'] = 'getimmutable'
+    reply['payload'] = json.dumps(result)
+    emit('response',reply)
+
 @socketio.on('preorder', namespace='/account')
 def acc_preorder(msg):
     print msg
