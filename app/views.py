@@ -297,7 +297,7 @@ def background_thread_currentblock():
     while True:
         socketio.sleep(10)
         data = client.getinfo() #json.dumps(client.getinfo())
-
+        print data
         if 'bitcoind_blocks' in data:
             height = data['bitcoind_blocks']
             blockheight += 1
@@ -569,16 +569,26 @@ def acc_network(msg):
     network = msg['network']
     uid = msg['uid']
 
-    queryNetwork = networkColls.find({network + ".username": uid})
-    print dumps(queryNetwork[0])
-
     reply['type'] = 'network'
     reply['payload'] = response_result
-
     response_result['network'] = network
     response_result['user'] = uid
-    response_result['address'] = queryNetwork[0][network]['address']
-    response_result['success'] = True
+
+    queryNetwork = networkColls.find_one({network + ".username": uid})
+    if queryNetwork is not None:
+        print queryNetwork[network]
+        if "username" in queryNetwork[network]:
+            print dumps(queryNetwork[network])
+            if queryNetwork[network]['address'] != '':
+                response_result['address'] = queryNetwork[network]['address']
+                response_result['success'] = True
+            else:
+                response_result['address'] = ''
+                response_result['success'] = False
+    else:
+    #no results
+        response_result['address'] = ''
+        response_result['success'] = False
 
     print ('network response: %s' % str(reply))
 
