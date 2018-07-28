@@ -14,6 +14,8 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, ro
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
 
+log = config.log
+
 DEBUG = True
 logFileHandler = RotatingFileHandler("reddstack-api.log", maxBytes=10000000, backupCount=99)
 log_format = ('[%(asctime)s] [%(levelname)s] [%(module)s:%(lineno)d] (' + str(os.getpid()) + ') %(message)s' if DEBUG else '%(message)s')
