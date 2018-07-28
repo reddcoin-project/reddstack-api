@@ -1,4 +1,7 @@
 import json
+import os
+import logging
+from logging.handlers import RotatingFileHandler
 from pymongo import MongoClient
 from bson.json_util import loads, dumps
 import requests
@@ -10,6 +13,13 @@ from app import app, socketio
 from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, rooms, disconnect
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
+
+DEBUG = True
+logFileHandler = RotatingFileHandler("reddstack-api.log", maxBytes=10000000, backupCount=99)
+log_format = ('[%(asctime)s] [%(levelname)s] [%(module)s:%(lineno)d] (' + str(os.getpid()) + ') %(message)s' if DEBUG else '%(message)s')
+logfile_formatter = logging.Formatter(log_format)
+logFileHandler.setFormatter(logfile_formatter)
+log.addHandler(logFileHandler)
 
 
 executor = ThreadPoolExecutor(2)
