@@ -450,7 +450,7 @@ def get_cost(msg):
 @socketio.on('lookup', namespace='/account')
 def lookup(msg):
     print msg
-    name = msg['data']
+    name = msg['user']
     name = name + '.' + DEFAULT_NAMESPACE
     reply = {}
     result = {}
@@ -589,6 +589,31 @@ def acc_update(msg):
         print "Error in update " + update_result['error']
         #emit('register', {'error': register_result['error']})
         emit('response', reply)
+
+@socketio.on('getProfile', namespace='/account')
+def acc_getProfile(msg):
+    log.debug(msg)
+    reply = {}
+    name = msg['name'] + '.' + DEFAULT_NAMESPACE
+    data = msg['hash']
+
+    profile_result = client.get_immutable(str(name), str(data))
+    profile_result['uid'] = name
+    reply['type'] = 'getProfile'
+    reply['payload'] = profile_result
+    emit('response', reply)
+
+@socketio.on('getNamesOwnedByAddress', namespace='/account')
+def acc_getNamesOwnedByAddress(msg):
+    log.debug(msg)
+    address = msg['address']
+    reply = {}
+
+    names_result = client.get_names_owned_by_address(address)
+    reply['type'] = 'getNamesOwnedByAddress'
+    reply['payload'] = names_result
+
+    emit('response', reply)
 
 @socketio.on('network', namespace='/account')
 def acc_network(msg):
