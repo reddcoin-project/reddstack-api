@@ -641,6 +641,11 @@ def acc_network(msg):
             else:
                 response_result['address'] = ''
                 response_result['success'] = False
+
+            if queryNetwork[network]['valid']:
+                response_result['valid'] = queryNetwork[network]['valid']
+            else:
+                response_result['valid'] = False
     else:
     #no results
         response_result['address'] = ''
