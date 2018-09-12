@@ -642,10 +642,8 @@ def acc_network(msg):
                 response_result['address'] = ''
                 response_result['success'] = False
 
-            if queryNetwork[network]['valid']:
-                response_result['valid'] = queryNetwork[network]['valid']
-            else:
-                response_result['valid'] = False
+            response_result['valid'] = queryNetwork[network].get('valid', False)
+
     else:
     #no results
         response_result['address'] = ''
