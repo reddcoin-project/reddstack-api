@@ -318,8 +318,8 @@ def background_thread_currentblock():
 
         payload['height'] = height
 
-        reply['type'] = 'height'
-        reply['payload'] = payload
+        reply['type'] = 'getinfo'
+        reply['payload'] = data
 
         socketio.emit('response', reply,
                       namespace='/account')
