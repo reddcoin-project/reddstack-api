@@ -307,7 +307,6 @@ def background_thread_currentblock():
     reply = {}
     payload = {}
     while True:
-        socketio.sleep(10)
         data = client.getinfo() #json.dumps(client.getinfo())
         print data
         if 'bitcoind_blocks' in data:
@@ -323,6 +322,7 @@ def background_thread_currentblock():
 
         socketio.emit('response', reply,
                       namespace='/account')
+        socketio.sleep(10)
 # Connect to server
 @socketio.on('connect', namespace='/account')
 def test_connect():
