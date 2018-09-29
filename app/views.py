@@ -627,7 +627,7 @@ def acc_getreddidcontacts(msg):
     except Exception as e:
         handle_exception(e)
 
-    names = data.results
+    names = json.dumps(data)
 
     reply['type'] = 'getreddidcontacts'
     reply['payload'] = names
