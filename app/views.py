@@ -614,6 +614,21 @@ def acc_getNamesOwnedByAddress(msg):
     reply['payload'] = names_result
 
     emit('response', reply)
+@socketio.on('getreddidcontacts', namespace='/account')
+def acc_getreddidcontacts(msg):
+    reply = {}
+    data = {}
+
+    try:
+        data = client.get_names_in_namespace(DEFAULT_NAMESPACE,None,None)
+    except Exception as e:
+        handle_exception(e)
+
+    names = data.results
+
+    reply['type'] = 'getreddidcontacts'
+    reply['payload'] = names
+    emit('response', reply)
 
 @socketio.on('network', namespace='/account')
 def acc_network(msg):
