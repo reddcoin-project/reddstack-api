@@ -633,6 +633,24 @@ def acc_getreddidcontacts(msg):
     reply['payload'] = names
     emit('response', reply)
 
+@socketio.on('getreddidcontactaddress', namespace='/account')
+def acc_getreddidcontactaddres(msg):
+    print msg
+    name = msg['user']
+    name = name + '.' + DEFAULT_NAMESPACE
+    reply = {}
+    result = {}
+    try:
+        result = client.get_name_blockchain_record(name)
+    except Exception as e:
+        handle_exception(e)
+        result['error'] = 'Cannot connect to server'
+
+    # print result
+    reply['type'] = 'getreddidcontactaddres'
+    reply['payload'] = json.dumps(result)
+    emit('response',reply)
+
 @socketio.on('network', namespace='/account')
 def acc_network(msg):
     error = None
