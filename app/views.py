@@ -637,7 +637,6 @@ def acc_getreddidcontacts(msg):
 def acc_getreddidcontactaddres(msg):
     print msg
     name = msg['name']
-    name = name + '.' + DEFAULT_NAMESPACE
     reply = {}
     result = {}
     try:
