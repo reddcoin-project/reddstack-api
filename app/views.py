@@ -646,7 +646,7 @@ def acc_getreddidcontactaddres(msg):
         result['error'] = 'Cannot connect to server'
 
     # print result
-    reply['type'] = 'getreddidcontactaddres'
+    reply['type'] = 'getreddidcontactaddress'
     reply['payload'] = json.dumps(result)
     emit('response',reply)
 
