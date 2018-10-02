@@ -615,6 +615,41 @@ def acc_getNamesOwnedByAddress(msg):
 
     emit('response', reply)
 
+@socketio.on('getreddidcontacts', namespace='/account')
+def acc_getreddidcontacts(msg):
+    log.debug(msg)
+    log.debug("Get Reddid Contacts")
+    reply = {}
+    data = {}
+
+    try:
+        data = client.get_names_in_namespace(DEFAULT_NAMESPACE,None,None)
+    except Exception as e:
+        handle_exception(e)
+
+    names = json.dumps(data)
+
+    reply['type'] = 'getreddidcontacts'
+    reply['payload'] = names
+    emit('response', reply)
+
+@socketio.on('getreddidcontactaddress', namespace='/account')
+def acc_getreddidcontactaddres(msg):
+    print msg
+    name = msg['name']
+    reply = {}
+    result = {}
+    try:
+        result = client.get_name_blockchain_record(name)
+    except Exception as e:
+        handle_exception(e)
+        result['error'] = 'Cannot connect to server'
+
+    # print result
+    reply['type'] = 'getreddidcontactaddress'
+    reply['payload'] = json.dumps(result)
+    emit('response',reply)
+
 @socketio.on('network', namespace='/account')
 def acc_network(msg):
     error = None
