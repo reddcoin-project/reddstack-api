@@ -47,7 +47,7 @@ networkColls = db.networks
 from ConfigParser import SafeConfigParser
 conf = config.get_config()
 conf["network"] = "mainnet"
-log.info(conf)
+
 proxy = client.session(conf, conf['server'], conf['port'])
 #client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage)
 DEFAULT_NAMESPACE = 'tester'
@@ -77,9 +77,9 @@ LENGTHS = {
     'announce': 20,
     'max_op_length': 40
 }
-
+log.info("\n\n******************\n Starting API server\n\n******************\n\n")
 log.info("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
-
+log.info(conf)
 
 def checkLength (data, operation):
     if len(data) > LENGTHS[operation]:
