@@ -47,7 +47,7 @@ networkColls = db.networks
 from ConfigParser import SafeConfigParser
 conf = config.get_config()
 conf["network"] = "mainnet"
-print conf
+log.info(conf)
 proxy = client.session(conf, conf['server'], conf['port'])
 #client = client.session(conf=conf, server_host=reddstack_server, server_port=reddstack_port, storage_drivers=reddstack_storage)
 DEFAULT_NAMESPACE = 'tester'
@@ -78,7 +78,7 @@ LENGTHS = {
     'max_op_length': 40
 }
 
-print("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
+log.info("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
 
 
 def checkLength (data, operation):
@@ -96,8 +96,8 @@ def get_blockchain_id(name):
     return None
 
 def handle_exception(e):
-    print "Exception Occurred"
-    print(e)
+    log.debug("Exception Occurred")
+    log.debug(e)
 
 @app.route('/api/name/lookup/<name>')
 def api_name_lookup(name):
@@ -298,7 +298,7 @@ def test_connect():
 
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
-    print('Client disconnected', request.sid)
+    log.info('Client disconnected', request.sid)
 
 thread_blockheight = None
 def background_thread_currentblock():
@@ -308,7 +308,7 @@ def background_thread_currentblock():
     payload = {}
     while True:
         data = client.getinfo() #json.dumps(client.getinfo())
-        print data
+        log.info(data)
         if 'bitcoind_blocks' in data:
             height = data['bitcoind_blocks']
             blockheight += 1
@@ -348,7 +348,7 @@ def ping_pong():
 
 @socketio.on('disconnect', namespace='/account')
 def test_disconnect():
-    print('Client disconnected', request.sid)
+    log.info('Client disconnected', request.sid)
 
 @socketio.on('register_', namespace='/account')
 def acc_register_(message):
@@ -356,7 +356,7 @@ def acc_register_(message):
     success = None
     namespace = 'test'
 
-    print('Register User: %s' % str(message))
+    log.info('Register User: %s' % str(message))
 
     if not message['username']:
         error = 'You have to enter a blockchain id'
@@ -381,13 +381,13 @@ def acc_register_(message):
 
 
         username = message['username'] + '.' + namespace
-        print username
+        log.info(username)
 
         preorder_result = json.dumps(client.preorder(username, config.PRIV_KEY))
         preorder_result = json.loads(preorder_result)
         preorder_result['operation'] = 'preorder'
 
-        print('Blockchain result: %s' % str(preorder_result))
+        log.info('Blockchain result: %s' % str(preorder_result))
 
         if 'success' in preorder_result:
             db.commit()
@@ -398,7 +398,7 @@ def acc_register_(message):
             register_result = json.dumps(client.register(username, config.PRIV_KEY, preorder_result['register_address']))
             register_result = json.loads(register_result)
             register_result['operation'] = 'register'
-            print ('Register Response = %s' % str(register_result))
+            log.info ('Register Response = %s' % str(register_result))
 
             if 'success' in register_result:
                 emit('register_tx', register_result)
@@ -414,17 +414,17 @@ def acc_register_(message):
 
 @socketio.on('get_tx', namespace='/account')
 def get_tx_hash(msg):
-    print msg
+    log.info(msg)
     result = json.dumps(client.gettxinfo(msg['tx_hash']))
     result = json.loads(result)
     result['op'] = msg['op']
     result['tx_hash'] = msg['tx_hash']
-    print result
+    log.info(result)
     emit('send_tx', result)
 
 @socketio.on('getcost', namespace='/account')
 def get_cost(msg):
-    print msg
+    log.info(msg)
     name = msg['data']
     name = name + '.' + DEFAULT_NAMESPACE
     reply = {}
@@ -432,7 +432,7 @@ def get_cost(msg):
     result = json.loads(result)
     #result = json.dumps(client.gettxinfo(msg['tx_hash']))
     available = client.get_name_record(name)
-    print available
+    log.info(available)
 
     result['uid'] = msg['data']
     if 'error' in client.get_name_blockchain_record(name):
@@ -440,7 +440,7 @@ def get_cost(msg):
     else:
         result['status'] = 'found'
 
-    print result
+    log.info(result)
     reply['type'] = 'cost'
     reply['payload'] = result
     emit('response',reply)
@@ -449,7 +449,7 @@ def get_cost(msg):
 
 @socketio.on('lookup', namespace='/account')
 def lookup(msg):
-    print msg
+    log.info(msg)
     name = msg['user']
     name = name + '.' + DEFAULT_NAMESPACE
     reply = {}
@@ -467,7 +467,7 @@ def lookup(msg):
 
 @socketio.on('getimmutable', namespace='/account')
 def getimmutable(msg):
-    print msg
+    log.info(msg)
     name = msg['uid']
     name = name + '.' + DEFAULT_NAMESPACE
     value_hash = msg['value_hash']
@@ -486,7 +486,7 @@ def getimmutable(msg):
 
 @socketio.on('preorder', namespace='/account')
 def acc_preorder(msg):
-    print msg
+    log.info(msg)
     error = None
     success = None
     reply = {}
@@ -498,9 +498,6 @@ def acc_preorder(msg):
     if get_blockchain_id(name) is not None:
         error = 'The blockchain id is already taken'
 
-    print name
-    print owningAddr
-    print publicKey
     # preorder UID, paying privkey, [owning addr]
 
     #preorder_result = json.dumps(client.preorder(username, config.PRIV_KEY, owningAddr))
@@ -509,15 +506,15 @@ def acc_preorder(msg):
     #preorder_result['operation'] = 'preorder'
     reply['type'] = 'preorder'
     reply['payload'] = preorder_result
-    print('Blockchain result: %s' % str(reply))
+    log.info('Blockchain result: %s' % str(reply))
 
     if not 'error' in preorder_result:
-        print "Success in preorder "
+        log.info("Success in preorder ")
         #emit('preorder', preorder_result)
         emit('response', reply)
 
     else:
-        print "Error in preorder " + preorder_result['error']
+        log.info("Error in preorder " + preorder_result['error'])
         #emit('preorder', {'error': preorder_result['error']})
         emit('response', reply)
     #    return
@@ -525,7 +522,7 @@ def acc_preorder(msg):
     
 @socketio.on('register', namespace='/account')
 def acc_register(msg):
-    print msg
+    log.info(msg)
     error = None
     success = None
     reply ={}
@@ -541,21 +538,21 @@ def acc_register(msg):
     #register_result['type'] = 'register'
     reply['type'] = 'register'
     reply['payload'] = register_result
-    print ('Blockchain result: %s' % str(reply))
+    log.info ('Blockchain result: %s' % str(reply))
 
     if not 'error' in register_result:
-        print "Success in register "
+        log.info ("Success in register ")
         #emit('register', register_result)
         emit('response', reply)
 
     else:
-        print "Error in register " + register_result['error']
+        log.info ("Error in register " + register_result['error'])
         #emit('register', {'error': register_result['error']})
         emit('response', reply)
 
 @socketio.on('update', namespace='/account')
 def acc_update(msg):
-    print "Updating: " + str(msg)
+    log.info( "Updating: " + str(msg))
     error = None
     success = None
     reply ={}
@@ -567,26 +564,26 @@ def acc_update(msg):
     if 'tx_hash' in msg:
         # sending the confirmation command
         tx_hash = msg['tx_hash']
-        print "Sending Update"
+        log.info ("Sending Update")
         update_result = client.update(name, payload, publicKey, tx_hash)
     else:
         # generating out update transaction only. Will call the above again soon
-        print "Getting Transaction"
+        log.info ("Getting Transaction")
         update_result = client.update_unsigned(name, payload, publicKey)
 
     #update_result = json.loads(update_result)
 
     reply['type'] = 'update'
     reply['payload'] = update_result
-    print ('Blockchain result: %s' % str(reply))
+    log.info ('Blockchain result: %s' % str(reply))
 
     if not 'error' in update_result:
-        print "Success in update "
+        log.info ("Success in update ")
         #emit('register', register_result)
         emit('response', reply)
 
     else:
-        print "Error in update " + update_result['error']
+        log.info ("Error in update " + update_result['error'])
         #emit('register', {'error': register_result['error']})
         emit('response', reply)
 
@@ -635,7 +632,7 @@ def acc_getreddidcontacts(msg):
 
 @socketio.on('getreddidcontactaddress', namespace='/account')
 def acc_getreddidcontactaddres(msg):
-    print msg
+    log.info(msg)
     name = msg['name']
     reply = {}
     result = {}
@@ -667,9 +664,9 @@ def acc_network(msg):
 
     queryNetwork = networkColls.find_one({network + ".username": uid})
     if queryNetwork is not None:
-        print queryNetwork[network]
+        log.debug(queryNetwork[network])
         if "username" in queryNetwork[network]:
-            print dumps(queryNetwork[network])
+            log.debug(dumps(queryNetwork[network]))
             if queryNetwork[network]['address'] != '':
                 response_result['address'] = queryNetwork[network]['address']
                 response_result['success'] = True
@@ -684,7 +681,7 @@ def acc_network(msg):
         response_result['address'] = ''
         response_result['success'] = False
 
-    print ('network response: %s' % str(reply))
+    log.debug('network response: %s' % str(reply))
 
     emit('response', reply)
 
@@ -697,7 +694,7 @@ def acc_tipurl(msg):
     reply['type'] = 'tipurl'
     reply['payload'] = msg
 
-    print ('tipurl response: %s' % str(reply))
+    log.debug('tipurl response: %s' % str(reply))
 
     emit('response', reply, broadcast=True)
 
@@ -724,6 +721,6 @@ def getuseraddr(uid):
 
     for user in users:
         if uid == user['uid']:
-            print ('Matched uid %s' % str(user['uid']))
+            log.debug('Matched uid %s' % str(user['uid']))
             return user['address']
 
