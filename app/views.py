@@ -347,8 +347,8 @@ def ping_pong():
     emit('my_pong')
 
 @socketio.on('disconnect', namespace='/account')
-def test_disconnect():
-    log.info('Client disconnected', request.sid)
+def test_disconnect(sid):
+    log.info('Client disconnected', sid)
 
 @socketio.on('register_', namespace='/account')
 def acc_register_(message):
