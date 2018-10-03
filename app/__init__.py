@@ -1,6 +1,6 @@
 # activate eventlet
 import eventlet
-eventlet.monkey_patch(socket=True)
+#eventlet.monkey_patch(all=True)
 
 from flask import Flask
 from flask_socketio import SocketIO
