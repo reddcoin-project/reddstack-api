@@ -297,8 +297,8 @@ def test_connect():
 
 
 @socketio.on('disconnect', namespace='/test')
-def test_disconnect():
-    log.info('Client disconnected', request.sid)
+def test_disconnect(sid):
+    log.info('Client disconnected', sid)
 
 thread_blockheight = None
 def background_thread_currentblock():
