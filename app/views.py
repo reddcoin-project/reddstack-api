@@ -14,6 +14,10 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, ro
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
 
+connected_users = []
+max_online = 0
+connUid = 0
+
 log = config.log
 
 DEBUG = True
@@ -98,6 +102,17 @@ def get_blockchain_id(name):
 def handle_exception(e):
     log.debug("Exception Occurred")
     log.debug(e)
+
+@app.route('/api/connected')
+def api_connected_clients():
+    data = {
+    'online': len(connected_users),
+    'max_online': max_online
+    }
+    resp = Response(response=json.dumps(data),
+    status=200, \
+    mimetype="application/json")
+    return (resp)
 
 @app.route('/api/name/lookup/<name>')
 def api_name_lookup(name):
@@ -319,19 +334,36 @@ def background_thread_currentblock():
 
         reply['type'] = 'getinfo'
         reply['payload'] = data
+        reply['connections'] = {
+            'online': len(connected_users),
+            'max_online': max_online
+        }
 
         socketio.emit('response', reply,
                       namespace='/account')
         socketio.sleep(10)
 # Connect to server
 @socketio.on('connect', namespace='/account')
-def test_connect():
+def acc_connect():
     global thread
     global thread_blockheight
+    global connUid
+    global max_online
+
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
     if thread_blockheight is None:
         thread_blockheight = socketio.start_background_task(target=background_thread_currentblock)
+
+    connected_users.append({
+        'id': connUid,
+        'sid': str(request.sid)
+        })
+    if len(connected_users) > max_online:
+        max_online = len(connected_users)
+
+    log.info('Client connected %s, %s users connected, %s peak connections' % (str(request.sid), len(connected_users), str(max_online)))
+    connUid += 1
     emit('my_response', {'data': 'Connected', 'count': 0})
 
 # Disconnect from server
@@ -347,8 +379,14 @@ def ping_pong():
     emit('my_pong')
 
 @socketio.on('disconnect', namespace='/account')
-def test_disconnect(sid):
-    log.info('Client disconnected', sid)
+def acc_disconnect():
+    client = (item for item in connected_users if item['sid'] == request.sid).next()
+
+    if client:
+        client_id = client['id']
+        connected_users.remove(client)
+
+    log.info('Client disconnected %s, %s users connected, %s peak connections' % (str(request.sid), len(connected_users), str(max_online)))
 
 @socketio.on('register_', namespace='/account')
 def acc_register_(message):
