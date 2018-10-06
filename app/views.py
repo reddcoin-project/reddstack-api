@@ -318,7 +318,8 @@ def test_disconnect(sid):
 thread_blockheight = None
 def background_thread_currentblock():
     """Example of how to send server generated events to clients."""
-    blockheight = 0
+    currentheight = 0
+    height = 0
     reply = {}
     payload = {}
     while True:
@@ -326,7 +327,6 @@ def background_thread_currentblock():
         log.info(data)
         if 'bitcoind_blocks' in data:
             height = data['bitcoind_blocks']
-            blockheight += 1
         else:
             height = 'Indexing'
 
@@ -338,10 +338,14 @@ def background_thread_currentblock():
             'online': len(connected_users),
             'max_online': max_online
         }
-
-        socketio.emit('response', reply,
+        #only send if we need to
+        if height > currentheight:
+            log.info('Sending %s' % (reply))
+            socketio.emit('response', reply, 
                       namespace='/account')
-        socketio.sleep(10)
+            currentheight = height
+        
+        socketio.sleep(30)
 # Connect to server
 @socketio.on('connect', namespace='/account')
 def acc_connect():
