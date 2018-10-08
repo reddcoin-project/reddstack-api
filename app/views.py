@@ -21,7 +21,7 @@ connUid = 0
 log = config.log
 
 DEBUG = True
-logFileHandler = RotatingFileHandler("reddstack-api.log", maxBytes=10000000, backupCount=99)
+logFileHandler = RotatingFileHandler("logs/reddstack-api.log", maxBytes=50000000, backupCount=99)
 log_format = ('[%(asctime)s] [%(levelname)s] [%(module)s:%(lineno)d] (' + str(os.getpid()) + ') %(message)s' if DEBUG else '%(message)s')
 logfile_formatter = logging.Formatter(log_format)
 logFileHandler.setFormatter(logfile_formatter)
