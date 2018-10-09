@@ -9,7 +9,7 @@ from flask import g, render_template, request, Response, redirect, url_for, sess
 from werkzeug import check_password_hash, generate_password_hash
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
-from app import app, socketio
+from reddstackapi import app, socketio
 from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, rooms, disconnect
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
@@ -19,9 +19,14 @@ max_online = 0
 connUid = 0
 
 log = config.log
+#Remove all logging handlers and pipe everything to file
+
+for handler in log.handlers[:]:
+    log.removeHandler(handler)
+
 
 DEBUG = True
-logFileHandler = RotatingFileHandler("logs/reddstack-api.log", maxBytes=50000000, backupCount=99)
+logFileHandler = RotatingFileHandler("../logs/reddstack-api.log", maxBytes=50000000, backupCount=99)
 log_format = ('[%(asctime)s] [%(levelname)s] [%(module)s:%(lineno)d] (' + str(os.getpid()) + ') %(message)s' if DEBUG else '%(message)s')
 logfile_formatter = logging.Formatter(log_format)
 logFileHandler.setFormatter(logfile_formatter)
@@ -81,7 +86,7 @@ LENGTHS = {
     'announce': 20,
     'max_op_length': 40
 }
-log.info("\n\n******************\n Starting API server\n\n******************\n\n")
+log.info("\n\n******************\n Starting API server\n******************\n\n")
 log.info("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
 log.info(conf)
 
