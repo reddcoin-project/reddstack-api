@@ -26,7 +26,10 @@ for handler in log.handlers[:]:
 
 
 DEBUG = True
-logFileHandler = RotatingFileHandler("../logs/reddstack-api.log", maxBytes=50000000, backupCount=99)
+logPath = "../logs"
+if not os.path.isdir(logPath):
+    os.makedirs(logPath)
+logFileHandler = RotatingFileHandler(logPath + "/reddstack-api.log", maxBytes=50000000, backupCount=99)
 log_format = ('[%(asctime)s] [%(levelname)s] [%(module)s:%(lineno)d] (' + str(os.getpid()) + ') %(message)s' if DEBUG else '%(message)s')
 logfile_formatter = logging.Formatter(log_format)
 logFileHandler.setFormatter(logfile_formatter)
