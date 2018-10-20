@@ -3,6 +3,11 @@
 
 import os
 import logging
+from .version import __version__, clientLatest
+
+VERSION = __version__
+CLIENTLATEST = clientLatest
+
 
 # borrowed from Blockstore
 # these never change, so it's fine to duplicate them here

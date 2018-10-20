@@ -3,6 +3,7 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 from pymongo import MongoClient
+from packaging import version
 from bson.json_util import loads, dumps
 import requests
 from flask import g, render_template, request, Response, redirect, url_for, session, flash, _app_ctx_stack
@@ -13,6 +14,8 @@ from reddstackapi import app, socketio
 from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, rooms, disconnect
 
 from blockstore_client import config, client, schemas, parsing, user, storage, drivers
+
+from reddstackapi import config as rsaconfig
 
 connected_users = []
 max_online = 0
@@ -89,7 +92,7 @@ LENGTHS = {
     'announce': 20,
     'max_op_length': 40
 }
-log.info("\n\n******************\n Starting API server\n******************\n\n")
+log.info("\n\n****************************\n Starting API server v{0}\n****************************\n\n".format(rsaconfig.VERSION))
 log.info("Server: %s, Port: %s" % ( conf['server'], conf['port'] ))
 log.info(conf)
 
@@ -341,6 +344,7 @@ def background_thread_currentblock():
         payload['height'] = height
 
         reply['type'] = 'getinfo'
+        data['api_version'] = rsaconfig.VERSION
         reply['payload'] = data
         reply['connections'] = {
             'online': len(connected_users),
@@ -748,6 +752,24 @@ def acc_tipurl(msg):
 
     emit('response', reply, broadcast=True)
 
+@socketio.on('client_version', namespace='/account')
+def acc_clientVersion(msg):
+    response = {}
+    reply = {}
+    if version.parse(msg['data']) == version.parse(rsaconfig.CLIENTLATEST):
+        log.info('Client version {0} ok'.format(msg['data']))
+        response['status'] = 'ok'
+    elif version.parse(msg['data']) < version.parse(rsaconfig.CLIENTLATEST):
+        log.info('Client version {0} old'.format(msg['data']))
+        response['status'] = 'check'
+    elif version.parse(msg['data']) > version.parse(rsaconfig.CLIENTLATEST):
+        log.info('Client version {0} new'.format(msg['data']))
+        response['status'] = 'check'
+
+    response['version'] = rsaconfig.CLIENTLATEST
+    reply['type'] = 'version'
+    reply['payload'] = response
+    emit('response', reply)
 
 @socketio.on('my_event', namespace='/account')
 def test_message(message):
