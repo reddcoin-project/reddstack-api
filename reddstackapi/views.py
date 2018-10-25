@@ -361,13 +361,10 @@ def background_thread_currentblock():
 # Connect to server
 @socketio.on('connect', namespace='/account')
 def acc_connect():
-    global thread
     global thread_blockheight
     global connUid
     global max_online
 
-    if thread is None:
-        thread = socketio.start_background_task(target=background_thread)
     if thread_blockheight is None:
         thread_blockheight = socketio.start_background_task(target=background_thread_currentblock)
 
