@@ -400,7 +400,6 @@ def acc_disconnect():
         connected_users.remove(client)
 
     log.info('Client disconnected %s, %s users connected, %s peak connections' % (str(request.sid), len(connected_users), str(max_online)))
-    disconnect()
 
 @socketio.on('register_', namespace='/account')
 def acc_register_(message):
