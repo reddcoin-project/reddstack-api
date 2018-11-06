@@ -357,7 +357,7 @@ def background_thread_currentblock():
                       namespace='/account')
             currentheight = height
         
-        socketio.sleep(30)
+        socketio.sleep(20)
 # Connect to server
 @socketio.on('connect', namespace='/account')
 def acc_connect():
@@ -366,6 +366,7 @@ def acc_connect():
     global max_online
 
     if thread_blockheight is None:
+        thread_blockheight = 'pending'
         thread_blockheight = socketio.start_background_task(target=background_thread_currentblock)
 
     connected_users.append({
