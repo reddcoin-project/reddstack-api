@@ -1,5 +1,5 @@
 #!venv/bin/python
-from reddstackapi import app, socketio, views, config
+from reddstackapi import app, socketio, config
 
 def run_reddstackapid():
 	"""
