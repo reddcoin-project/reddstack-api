@@ -125,6 +125,26 @@ def api_connected_clients():
     mimetype="application/json")
     return (resp)
 
+
+@app.route('/api/consensus')
+def api_consensus():
+
+    data = client.getinfo()
+    height = data['last_block']
+    return redirect(url_for('api_consensus_height', height=height))
+
+
+@app.route('/api/consensus/<height>')
+def api_consensus_height(height):
+    data = {}
+    data['height'] = height
+    data['consensus_hash'] = client.get_consensus_at(height)
+    resp = Response(response=json.dumps(data),
+    status=200, \
+    mimetype="application/json")
+    return (resp)
+
+
 @app.route('/api/name/lookup/<name>')
 def api_name_lookup(name):
 
